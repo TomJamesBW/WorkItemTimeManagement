@@ -537,9 +537,15 @@
             display: flex;
             flex-direction: column;
             resize: both;
-            overflow: hidden;
+            overflow: auto;
             min-width: 150px;
             max-width: 400px;
+        }
+
+        .sticky-note::-webkit-resizer {
+            background-image: none;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 0 0 5px 0;
         }
 
         .sticky-note.collapsed {
@@ -719,7 +725,7 @@
         <button class="floating-btn sort-btn" onclick="sortWorkItems()">Sort</button>
 
         <!-- Version Display -->
-        <div class="version">v1.25</div>
+        <div class="version">v1.26</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -1101,25 +1107,50 @@
 
                 wrapper.appendChild(card);
                 container.appendChild(wrapper);
-
-                // Add resize observer to adjust font size based on card width
-                setTimeout(() => {
-                    const cardWidth = card.offsetWidth;
-                    const titleEl = card.querySelector('.card-title');
-                    const timeEl = card.querySelector('.card-time');
-
-                    // Check if title wraps (has <br> or is long text)
-                    const hasWrappedText = formattedTitle.includes('<br>') || item.title.length > 20;
-
-                    if (cardWidth < 60 || hasWrappedText) {
-                        titleEl.classList.add('tiny');
-                        timeEl.classList.add('tiny');
-                    } else if (cardWidth < 90) {
-                        titleEl.classList.add('small');
-                        timeEl.classList.add('small');
-                    }
-                }, 0);
             });
+
+            // Apply uniform font sizing after all cards are rendered
+            setTimeout(() => {
+                const allCards = container.querySelectorAll('.work-card');
+                if (allCards.length === 0) return;
+
+                // Calculate average card width
+                let totalWidth = 0;
+                let hasWrappedText = false;
+
+                allCards.forEach((card, idx) => {
+                    totalWidth += card.offsetWidth;
+                    const item = workItems[idx];
+                    if (item && (item.title.length > 20 || item.title.includes(' '))) {
+                        const titleEl = card.querySelector('.card-title');
+                        if (titleEl && titleEl.innerHTML.includes('<br>')) {
+                            hasWrappedText = true;
+                        }
+                    }
+                });
+
+                const avgWidth = totalWidth / allCards.length;
+
+                // Determine size class based on average width or wrapped text
+                let sizeClass = '';
+                if (avgWidth < 60 || hasWrappedText) {
+                    sizeClass = 'tiny';
+                } else if (avgWidth < 90) {
+                    sizeClass = 'small';
+                }
+
+                // Apply the same size class to all cards
+                if (sizeClass) {
+                    allCards.forEach(card => {
+                        const titleEl = card.querySelector('.card-title');
+                        const timeEl = card.querySelector('.card-time');
+                        if (titleEl && timeEl) {
+                            titleEl.classList.add(sizeClass);
+                            timeEl.classList.add(sizeClass);
+                        }
+                    });
+                }
+            }, 0);
         }
 
         // Drag and Drop
@@ -1620,6 +1651,17 @@
             draggedNote = this;
             const rect = draggedNote.getBoundingClientRect();
             const parentRect = document.getElementById('notesSection').getBoundingClientRect();
+
+            // Check if click is in the resize handle area (bottom-right 15px corner)
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            const isInResizeArea = (clickX > rect.width - 15) && (clickY > rect.height - 15);
+
+            // Don't start drag if in resize area
+            if (isInResizeArea) {
+                draggedNote = null;
+                return;
+            }
 
             noteOffsetX = e.clientX - rect.left;
             noteOffsetY = e.clientY - rect.top;

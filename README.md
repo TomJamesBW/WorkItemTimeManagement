@@ -66,7 +66,22 @@ A single-page time management application for tracking work items with visual ti
 
 ## Version History
 
-### v1.25 (Current)
+### v1.26 (Current)
+**Bug Fixes:**
+- Fixed font sizing to apply uniformly across all work items based on average card width
+- Fonts now only shrink when there are many cards (not individual card basis)
+- Fixed note resize functionality - resize handle now works properly in bottom-right corner
+- Prevented drag interference with resize by detecting resize area clicks
+
+**Changes:**
+- Font sizing uses average card width calculation
+- All cards get same font size class (tiny/small/normal) for consistency
+- Note resize handle area (15px corner) blocks dragging
+- Changed note overflow from `hidden` to `auto` to enable resize
+
+---
+
+### v1.25
 **Features:**
 - Notes are now resizable by the user (drag resize handle in bottom-right corner)
 - Added Sort button to sort work items by time (largest to smallest, left to right)
@@ -527,4 +542,4 @@ When timer finishes:
 This is a single-page application created for personal time management. Feel free to use and modify as needed.
 
 ## Support
-For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.25).
+For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.26).
