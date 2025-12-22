@@ -63,7 +63,22 @@ A single-page time management application for tracking work items with visual ti
 
 ## Version History
 
-### v1.23 (Current)
+### v1.24 (Current)
+**Bug Fixes:**
+- Fixed Close Timer (Save Progress) logic to properly calculate remaining time
+- Work item now shows remaining time with accumulated time in brackets
+- Example: After using 2 minutes of a 30-minute task, displays "28h 2m (0h 2m)"
+
+**Changes:**
+- Added `accumulatedMinutes` field to track time already used
+- Remaining time is now the primary display value
+- Accumulated time shown in brackets after main time
+- Timer reopens with correct remaining time
+- Backward compatibility maintained for existing work items
+
+---
+
+### v1.23
 **Features:**
 - Added cancel timer confirmation dialog with two options
 - **Close Timer (Save Progress)**: Closes timer and updates work item to reflect time already used
@@ -396,7 +411,8 @@ A single-page time management application for tracking work items with visual ti
   title: string,
   totalMinutes: number,
   priority: 'high' | 'medium' | 'low',
-  locked: boolean
+  locked: boolean,
+  accumulatedMinutes: number // Time already used from this work item
 }
 ```
 
@@ -490,4 +506,4 @@ When timer finishes:
 This is a single-page application created for personal time management. Feel free to use and modify as needed.
 
 ## Support
-For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.23).
+For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.24).

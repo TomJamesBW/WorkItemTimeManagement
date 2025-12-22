@@ -686,7 +686,7 @@
         <button class="floating-btn save-load-btn" onclick="showSaveLoadDialog()">Save/Load</button>
 
         <!-- Version Display -->
-        <div class="version">v1.23</div>
+        <div class="version">v1.24</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -942,7 +942,8 @@
                 title: title,
                 totalMinutes: totalMinutes,
                 priority: priority,
-                locked: false
+                locked: false,
+                accumulatedMinutes: 0 // Track time already used
             };
 
             workItems.push(workItem);
@@ -979,7 +980,15 @@
                 let displayTime = '';
                 const hours = Math.floor(item.totalMinutes / 60);
                 const minutes = item.totalMinutes % 60;
-                const timeText = `${hours}h ${minutes}m`;
+                let timeText = `${hours}h ${minutes}m`;
+
+                // Add accumulated time if it exists
+                const accumulatedMinutes = item.accumulatedMinutes || 0;
+                if (accumulatedMinutes > 0) {
+                    const accHours = Math.floor(accumulatedMinutes / 60);
+                    const accMins = accumulatedMinutes % 60;
+                    timeText += ` (${accHours}h ${accMins}m)`;
+                }
 
                 if (item.locked) {
                     buttonClass = 'locked';
@@ -1183,14 +1192,19 @@
 
             const timer = activeTimers[cancelingTimerId];
             if (timer) {
-                // Calculate time used and update work item
+                // Calculate time used in this session
                 const timeUsedSeconds = timer.totalSeconds - timer.remainingSeconds;
                 const timeUsedMinutes = Math.ceil(timeUsedSeconds / 60);
 
-                // Update the work item's total time to reflect the time used
+                // Update the work item
                 const item = workItems[timer.index];
                 if (item) {
-                    item.totalMinutes = timeUsedMinutes;
+                    // Add the time used to accumulated time
+                    item.accumulatedMinutes = (item.accumulatedMinutes || 0) + timeUsedMinutes;
+
+                    // Update total time to be remaining time
+                    const remainingMinutes = Math.ceil(timer.remainingSeconds / 60);
+                    item.totalMinutes = remainingMinutes;
                 }
 
                 // Clear the timer
@@ -1597,6 +1611,12 @@
                         workItems = imported;
                     } else {
                         workItems = imported.workItems || [];
+                        // Ensure all work items have accumulatedMinutes property
+                        workItems = workItems.map(item => ({
+                            ...item,
+                            accumulatedMinutes: item.accumulatedMinutes || 0
+                        }));
+
                         stickyNotes = imported.stickyNotes || [];
                         // Restore active timers if present
                         if (imported.activeTimers) {
@@ -1712,6 +1732,12 @@
                         stickyNotes = [];
                     } else {
                         workItems = data.workItems || [];
+                        // Ensure all work items have accumulatedMinutes property
+                        workItems = workItems.map(item => ({
+                            ...item,
+                            accumulatedMinutes: item.accumulatedMinutes || 0
+                        }));
+
                         stickyNotes = data.stickyNotes || [];
                         // Ensure all notes have collapsed and title properties
                         stickyNotes = stickyNotes.map(note => ({
