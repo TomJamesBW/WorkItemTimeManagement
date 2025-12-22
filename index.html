@@ -654,6 +654,28 @@
             border-color: #000;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
+
+        /* Live Timer Indicator */
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #ff0000;
+            border-radius: 50%;
+            margin-left: 8px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+        }
     </style>
 </head>
 <body>
@@ -664,7 +686,7 @@
         <button class="floating-btn save-load-btn" onclick="showSaveLoadDialog()">Save/Load</button>
 
         <!-- Version Display -->
-        <div class="version">v1.21</div>
+        <div class="version">v1.22</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -836,14 +858,28 @@
         let noteOffsetY = 0;
         let contextMenuNoteId = null;
         let contextMenuWorkItemId = null;
+        let autoSaveInterval = null;
 
         // Load from localStorage on startup
         window.addEventListener('DOMContentLoaded', function() {
             loadFromLocalStorage();
             renderWorkItems();
             renderNotes();
-            // Don't show timer sidebar on initial load
+            // Start auto-save interval (every 60 seconds)
+            startAutoSave();
         });
+
+        // Auto-save timer state every 60 seconds
+        function startAutoSave() {
+            if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+            }
+            autoSaveInterval = setInterval(() => {
+                if (Object.keys(activeTimers).length > 0) {
+                    saveToLocalStorage();
+                }
+            }, 60000); // 60 seconds
+        }
 
         // Show/Hide Dialogs
         function showAddItemDialog() {
@@ -1198,10 +1234,13 @@
 
                 const progress = (timer.remainingSeconds / timer.totalSeconds) * 100;
 
+                // Add live indicator if timer is running
+                const liveIndicator = !timer.paused ? '<span class="live-indicator"></span>' : '';
+
                 const timerCard = document.createElement('div');
                 timerCard.className = 'active-timer-card';
                 timerCard.innerHTML = `
-                    <h4>${item.title}</h4>
+                    <h4>${item.title}${liveIndicator}</h4>
                     <div class="timer-clock-small">${timeString}</div>
                     <div class="progress-bar-small">
                         <div class="progress-fill-small" style="width: ${progress}%"></div>
@@ -1475,7 +1514,8 @@
         function saveToJSON() {
             const exportData = {
                 workItems: workItems,
-                stickyNotes: stickyNotes
+                stickyNotes: stickyNotes,
+                activeTimers: serializeActiveTimers()
             };
             const dataStr = JSON.stringify(exportData, null, 2);
             const dataBlob = new Blob([dataStr], {type: 'application/json'});
@@ -1502,6 +1542,10 @@
                     } else {
                         workItems = imported.workItems || [];
                         stickyNotes = imported.stickyNotes || [];
+                        // Restore active timers if present
+                        if (imported.activeTimers) {
+                            deserializeActiveTimers(imported.activeTimers);
+                        }
                     }
                     saveToLocalStorage();
                     renderWorkItems();
@@ -1522,11 +1566,21 @@
         }
 
         function confirmClearWork() {
+            // Cancel all active timers
+            Object.keys(activeTimers).forEach(itemId => {
+                const timer = activeTimers[itemId];
+                if (timer.interval) {
+                    clearInterval(timer.interval);
+                }
+            });
+            activeTimers = {};
+
             workItems = [];
             stickyNotes = [];
             saveToLocalStorage();
             renderWorkItems();
             renderNotes();
+            renderActiveTimers();
             closeClearConfirmationDialog();
         }
 

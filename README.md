@@ -20,10 +20,12 @@ A single-page time management application for tracking work items with visual ti
 - **Persistent Sidebar**: Always-visible timer sidebar (350px width)
 - **Real-time Countdown**: Live countdown with HH:MM:SS display
 - **Progress Bar**: Visual progress indicator for each active timer
+- **Live Indicator**: Pulsing red dot shows when timer is actively running
 - **Individual Controls**: Play/Pause/Cancel buttons for each timer
 - **Add Time**: Option to add additional time when timer completes
 - **Audio Alert**: Triple-beep alarm sound using Web Audio API (Safari compatible)
-- **Auto-save**: Timer progress saved every 10 seconds and persists across page refreshes
+- **Auto-save**: Timer progress saved every 60 seconds and persists across page refreshes
+- **Restore on Refresh**: Active timers automatically resume after page reload
 
 ### Sticky Notes
 - **Draggable Notes**: Position notes anywhere in the notes section
@@ -34,10 +36,10 @@ A single-page time management application for tracking work items with visual ti
 - **Auto-save**: All notes persist to localStorage
 
 ### Data Management
-- **LocalStorage**: Automatic saving of all data
-- **JSON Export**: Save work items and notes to JSON file
-- **JSON Import**: Load work items and notes from JSON file
-- **Clear Work**: Option to clear all work items and notes with confirmation dialog
+- **LocalStorage**: Automatic saving of all data including active timer states
+- **JSON Export**: Save work items, notes, and active timers to JSON file
+- **JSON Import**: Load work items, notes, and active timers from JSON file
+- **Clear Work**: Option to clear all work items, notes, and timers with confirmation dialog
 
 ## Technical Specifications
 
@@ -61,7 +63,22 @@ A single-page time management application for tracking work items with visual ti
 
 ## Version History
 
-### v1.21 (Current)
+### v1.22 (Current)
+**Features:**
+- Added auto-save for active timers every 60 seconds (previously 10 seconds)
+- Live indicator (pulsing red dot) shows when timers are actively running
+- Active timers now fully restore on page refresh with correct state
+- Import/Export now includes active timer states
+
+**Changes:**
+- Timer state persistence improved for page refreshes
+- Active timers show visual live indicator in sidebar
+- Export JSON now captures running/paused timer states
+- Import JSON restores timer states and resumes active timers
+
+---
+
+### v1.21
 **Features:**
 - Added "Notes" title to notes section
 - Work item start buttons moved to bottom of cards
@@ -427,10 +444,11 @@ When timer finishes:
 7. Right-click to delete
 
 ### Saving/Loading
-- **Save to JSON**: Export work items and notes to file
-- **Import JSON**: Load work items and notes from file
-- **Clear Work**: Remove all work items and notes (with confirmation dialog)
-- Auto-save to localStorage on every change
+- **Save to JSON**: Export work items, notes, and active timers to file
+- **Import JSON**: Load work items, notes, and active timers from file
+- **Clear Work**: Remove all work items, notes, and timers (with confirmation dialog)
+- Auto-save to localStorage every 60 seconds for active timers
+- Timers automatically restore on page refresh
 
 ## Keyboard Shortcuts
 - **Right-click** on work item: Delete menu
@@ -459,4 +477,4 @@ When timer finishes:
 This is a single-page application created for personal time management. Feel free to use and modify as needed.
 
 ## Support
-For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.21).
+For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.22).
