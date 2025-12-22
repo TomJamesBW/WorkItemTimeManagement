@@ -226,6 +226,16 @@
             border-radius: 30px;
         }
 
+        .sort-btn {
+            left: 200px;
+            background: #9C27B0;
+            color: white;
+            font-size: 14px;
+            width: auto;
+            padding: 0 20px;
+            border-radius: 30px;
+        }
+
         .add-note-btn {
             position: absolute;
             bottom: 20px;
@@ -346,11 +356,29 @@
             word-wrap: break-word;
             overflow-wrap: anywhere;
             white-space: normal;
+            transition: font-size 0.2s;
+        }
+
+        .card-title.small {
+            font-size: 16px;
+        }
+
+        .card-title.tiny {
+            font-size: 12px;
         }
 
         .card-time {
             font-size: 16px;
             color: #000;
+            transition: font-size 0.2s;
+        }
+
+        .card-time.small {
+            font-size: 12px;
+        }
+
+        .card-time.tiny {
+            font-size: 10px;
         }
 
         /* Floating Box Overlay */
@@ -508,6 +536,10 @@
             transition: transform 0.1s;
             display: flex;
             flex-direction: column;
+            resize: both;
+            overflow: hidden;
+            min-width: 150px;
+            max-width: 400px;
         }
 
         .sticky-note.collapsed {
@@ -684,9 +716,10 @@
         <!-- Floating Buttons -->
         <button class="floating-btn add-btn" onclick="showAddItemDialog()">+</button>
         <button class="floating-btn save-load-btn" onclick="showSaveLoadDialog()">Save/Load</button>
+        <button class="floating-btn sort-btn" onclick="sortWorkItems()">Sort</button>
 
         <!-- Version Display -->
-        <div class="version">v1.24</div>
+        <div class="version">v1.25</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -941,6 +974,7 @@
                 id: Date.now(),
                 title: title,
                 totalMinutes: totalMinutes,
+                originalMinutes: totalMinutes, // Store original time allocation
                 priority: priority,
                 locked: false,
                 accumulatedMinutes: 0 // Track time already used
@@ -951,6 +985,13 @@
             renderWorkItems();
             clearAddItemForm();
             closeAddItemDialog();
+        }
+
+        // Sort Work Items by time (largest to smallest)
+        function sortWorkItems() {
+            workItems.sort((a, b) => b.totalMinutes - a.totalMinutes);
+            saveToLocalStorage();
+            renderWorkItems();
         }
 
         // Render Work Items
@@ -1060,6 +1101,24 @@
 
                 wrapper.appendChild(card);
                 container.appendChild(wrapper);
+
+                // Add resize observer to adjust font size based on card width
+                setTimeout(() => {
+                    const cardWidth = card.offsetWidth;
+                    const titleEl = card.querySelector('.card-title');
+                    const timeEl = card.querySelector('.card-time');
+
+                    // Check if title wraps (has <br> or is long text)
+                    const hasWrappedText = formattedTitle.includes('<br>') || item.title.length > 20;
+
+                    if (cardWidth < 60 || hasWrappedText) {
+                        titleEl.classList.add('tiny');
+                        timeEl.classList.add('tiny');
+                    } else if (cardWidth < 90) {
+                        titleEl.classList.add('small');
+                        timeEl.classList.add('small');
+                    }
+                }, 0);
             });
         }
 
@@ -1224,7 +1283,14 @@
 
             const timer = activeTimers[cancelingTimerId];
             if (timer) {
-                // Simply clear the timer without updating work item time
+                // Restore work item to original time and clear accumulated time
+                const item = workItems[timer.index];
+                if (item) {
+                    item.totalMinutes = item.originalMinutes || item.totalMinutes;
+                    item.accumulatedMinutes = 0;
+                }
+
+                // Clear the timer
                 clearInterval(timer.interval);
                 delete activeTimers[cancelingTimerId];
                 saveToLocalStorage();
@@ -1442,7 +1508,9 @@
                 color: selectedNoteColor,
                 x: 50,
                 y: 50,
-                collapsed: false
+                collapsed: false,
+                width: 200,
+                height: 150
             };
 
             stickyNotes.push(note);
@@ -1471,6 +1539,8 @@
                 noteEl.style.backgroundColor = note.color;
                 noteEl.style.left = note.x + 'px';
                 noteEl.style.top = note.y + 'px';
+                noteEl.style.width = (note.width || 200) + 'px';
+                noteEl.style.height = (note.height || 150) + 'px';
                 noteEl.dataset.noteId = note.id;
 
                 const collapseIcon = note.collapsed ? '▼' : '−';
@@ -1495,6 +1565,20 @@
 
                 noteEl.addEventListener('mousedown', startNoteDrag);
                 noteEl.addEventListener('contextmenu', (e) => showNoteContextMenu(e, note.id));
+
+                // Add resize observer to save dimensions
+                const resizeObserver = new ResizeObserver(entries => {
+                    for (let entry of entries) {
+                        const noteId = parseInt(entry.target.dataset.noteId);
+                        const note = stickyNotes.find(n => n.id === noteId);
+                        if (note && !note.collapsed) {
+                            note.width = entry.contentRect.width;
+                            note.height = entry.contentRect.height;
+                            saveToLocalStorage();
+                        }
+                    }
+                });
+                resizeObserver.observe(noteEl);
 
                 container.appendChild(noteEl);
             });
@@ -1611,10 +1695,11 @@
                         workItems = imported;
                     } else {
                         workItems = imported.workItems || [];
-                        // Ensure all work items have accumulatedMinutes property
+                        // Ensure all work items have accumulatedMinutes and originalMinutes properties
                         workItems = workItems.map(item => ({
                             ...item,
-                            accumulatedMinutes: item.accumulatedMinutes || 0
+                            accumulatedMinutes: item.accumulatedMinutes || 0,
+                            originalMinutes: item.originalMinutes || item.totalMinutes
                         }));
 
                         stickyNotes = imported.stickyNotes || [];
@@ -1732,10 +1817,11 @@
                         stickyNotes = [];
                     } else {
                         workItems = data.workItems || [];
-                        // Ensure all work items have accumulatedMinutes property
+                        // Ensure all work items have accumulatedMinutes and originalMinutes properties
                         workItems = workItems.map(item => ({
                             ...item,
-                            accumulatedMinutes: item.accumulatedMinutes || 0
+                            accumulatedMinutes: item.accumulatedMinutes || 0,
+                            originalMinutes: item.originalMinutes || item.totalMinutes
                         }));
 
                         stickyNotes = data.stickyNotes || [];

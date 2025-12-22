@@ -15,6 +15,8 @@ A single-page time management application for tracking work items with visual ti
 - **Completion Tracking**: Lock completed items with a green checkmark
 - **Drag & Drop**: Reorder work items by dragging
 - **Context Menu**: Right-click to delete work items
+- **Sort Function**: Sort button arranges items from largest time to smallest (left to right)
+- **Dynamic Font Sizing**: Fonts automatically shrink for slim cards or wrapped text
 
 ### Timer Sidebar
 - **Persistent Sidebar**: Always-visible timer sidebar (350px width)
@@ -29,11 +31,12 @@ A single-page time management application for tracking work items with visual ti
 
 ### Sticky Notes
 - **Draggable Notes**: Position notes anywhere in the notes section
+- **Resizable**: Drag bottom-right corner to resize notes (150px-400px width, adjustable height)
 - **Color Selection**: 8 color options for note backgrounds
 - **Title & Content**: Notes include both title and text content
 - **Collapse/Expand**: Minimize notes to show just the title
 - **Context Menu**: Right-click to delete notes
-- **Auto-save**: All notes persist to localStorage
+- **Auto-save**: All notes persist to localStorage including custom dimensions
 
 ### Data Management
 - **LocalStorage**: Automatic saving of all data including active timer states
@@ -63,7 +66,22 @@ A single-page time management application for tracking work items with visual ti
 
 ## Version History
 
-### v1.24 (Current)
+### v1.25 (Current)
+**Features:**
+- Notes are now resizable by the user (drag resize handle in bottom-right corner)
+- Added Sort button to sort work items by time (largest to smallest, left to right)
+- Fonts automatically shrink for slim cards or wrapped text for better readability
+- Reset Timer now properly restores original time and clears accumulated time
+
+**Changes:**
+- Notes store and restore custom width and height
+- Work items track `originalMinutes` for proper reset functionality
+- Font sizes adjust dynamically: tiny (<60px width), small (<90px width), normal (≥90px)
+- Sort button positioned at left: 200px with purple background
+
+---
+
+### v1.24
 **Bug Fixes:**
 - Fixed Close Timer (Save Progress) logic to properly calculate remaining time
 - Work item now shows remaining time with accumulated time in brackets
@@ -410,6 +428,7 @@ A single-page time management application for tracking work items with visual ti
   id: timestamp,
   title: string,
   totalMinutes: number,
+  originalMinutes: number, // Original time allocation for reset functionality
   priority: 'high' | 'medium' | 'low',
   locked: boolean,
   accumulatedMinutes: number // Time already used from this work item
@@ -438,7 +457,9 @@ A single-page time management application for tracking work items with visual ti
   color: string (hex),
   x: number,
   y: number,
-  collapsed: boolean
+  collapsed: boolean,
+  width: number, // Custom width in pixels
+  height: number // Custom height in pixels
 }
 ```
 
@@ -506,4 +527,4 @@ When timer finishes:
 This is a single-page application created for personal time management. Feel free to use and modify as needed.
 
 ## Support
-For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.24).
+For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.25).
