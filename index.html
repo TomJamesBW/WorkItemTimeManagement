@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            background: linear-gradient(135deg, #7d7d7d 0%, #393939 100%);
+            display: flex;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .work-items-section {
+            height: 50%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .notes-section {
+            height: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timer-sidebar {
+            width: 350px;
+            background: white;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .timer-sidebar h3 {
+            padding: 20px;
+            margin: 0;
+            background: #3e3e3e;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+
+        .active-timer-card {
+            padding: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            background: white;
+        }
+
+        .active-timer-card h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .timer-clock-small {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            color: #333;
+        }
+
+        .progress-bar-small {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill-small {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .timer-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: opacity 0.2s;
+        }
+
+        .timer-btn:hover {
+            opacity: 0.8;
+        }
+
+        .timer-btn.play {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .timer-btn.pause {
+            background: #FF9800;
+            color: white;
+        }
+
+        .timer-btn.cancel {
+            background: #f44336;
+            color: white;
+        }
+
+        .timer-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Version Display */
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            color: white;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        /* Application Title */
+        .app-title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            z-index: 100;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+        }
+
+        /* Floating Buttons */
+        .floating-btn {
+            position: fixed;
+            top: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            transition: transform 0.2s;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .add-btn {
+            left: 20px;
+            background: #4CAF50;
+            color: white;
+        }
+
+        .save-load-btn {
+            left: 90px;
+            background: #2196F3;
+            color: white;
+            font-size: 14px;
+            width: auto;
+            padding: 0 20px;
+            border-radius: 30px;
+        }
+
+        .add-note-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 50;
+            transition: transform 0.2s;
+            background: #FFD700;
+            color: #333;
+        }
+
+        .add-note-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Cards Container */
+        .cards-container {
+            display: flex;
+            width: calc(100% - 40px);
+            max-height: calc(100% - 120px);
+            margin: 0 20px;
+            padding: 80px 0 40px 0;
+            gap: 5px;
+            align-items: stretch;
+            box-sizing: content-box;
+        }
+
+        .card-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            min-width: 80px;
+        }
+
+        .card-control-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.2s;
+            min-width: 80px;
+        }
+
+        .card-control-btn:hover {
+            opacity: 0.8;
+        }
+
+        .card-control-btn.pause-btn {
+            background: #FF9800;
+        }
+
+        .card-control-btn.locked {
+            background: #4CAF50;
+            cursor: not-allowed;
+            color: white;
+            font-size: 20px;
+        }
+
+        /* Work Item Card */
+        .work-card {
+            position: relative;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            cursor: move;
+            transition: all 0.3s;
+            width: 100%;
+            flex: 1;
+        }
+
+        .work-card.high {
+            background: #f44336;
+            border: 4px solid #000;
+        }
+
+        .work-card.medium {
+            background: #FFD700;
+            border: 4px solid #000;
+        }
+
+        .work-card.low {
+            background: #4CAF50;
+            border: 4px solid #000;
+        }
+
+        .work-card.dragging {
+            opacity: 0.5;
+        }
+
+        .card-content {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .card-title {
+            font-weight: bold;
+            font-size: 24px;
+            color: #000;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+            white-space: normal;
+        }
+
+        .card-time {
+            font-size: 16px;
+            color: #000;
+        }
+
+        /* Floating Box Overlay */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .floating-box {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .floating-box h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .time-inputs input {
+            width: 50%;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #9E9E9E;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-info {
+            background: #2196F3;
+            color: white;
+        }
+
+        /* Timer Display */
+        .timer-display {
+            text-align: center;
+        }
+
+        .timer-display h2 {
+            margin-bottom: 20px;
+        }
+
+        .timer-clock {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #333;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s;
+        }
+
+        /* Save/Load Menu */
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Post-it Notes */
+        .sticky-note {
+            position: absolute;
+            width: 200px;
+            min-height: 150px;
+            max-height: 300px;
+            border-radius: 5px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+            cursor: move;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-wrap: break-word;
+            transition: transform 0.1s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sticky-note.collapsed {
+            min-height: 40px;
+            max-height: 40px;
+            overflow: hidden;
+        }
+
+        .sticky-note.collapsed .note-header {
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .sticky-note.collapsed .note-content {
+            display: none;
+        }
+
+        .sticky-note:hover {
+            transform: scale(1.02);
+        }
+
+        .sticky-note.dragging {
+            opacity: 0.8;
+            z-index: 1000;
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 5px 5px 10px;
+            flex-shrink: 0;
+        }
+
+        .note-title-header {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .note-btn {
+            width: 20px;
+            height: 20px;
+            border: none;
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .note-btn:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .note-content {
+            padding: 10px 15px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex: 1;
+        }
+
+        .sticky-note.collapsed .note-content {
+            overflow: hidden;
+        }
+
+        .note-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .note-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        .note-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .note-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Context Menu */
+        .context-menu {
+            position: fixed;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            padding: 8px 0;
+            z-index: 2000;
+            display: none;
+        }
+
+        .context-menu.active {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .context-menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        .context-menu-item.delete {
+            color: #f44336;
+        }
+
+        .color-picker {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .color-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: border 0.2s;
+        }
+
+        .color-option:hover {
+            border-color: #333;
+        }
+
+        .color-option.selected {
+            border-color: #000;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Application Title -->
+        <h1 class="app-title">Work Item Time Management</h1>
+
+        <!-- Floating Buttons -->
+        <button class="floating-btn add-btn" onclick="showAddItemDialog()">+</button>
+        <button class="floating-btn save-load-btn" onclick="showSaveLoadDialog()">Save/Load</button>
+
+        <!-- Version Display -->
+        <div class="version">v1.20</div>
+
+        <!-- Work Items Section -->
+        <div class="work-items-section">
+            <div class="cards-container" id="cardsContainer"></div>
+        </div>
+
+        <!-- Notes Section -->
+        <div class="notes-section" id="notesSection">
+            <button class="add-note-btn" onclick="showAddNoteDialog()">+</button>
+        </div>
+    </div>
+
+    <!-- Timer Sidebar -->
+    <div class="timer-sidebar" id="timerSidebar">
+        <h3>Active Timers</h3>
+        <div id="activeTimersContainer"></div>
+    </div>
+
+    <!-- Add Item Overlay -->
+    <div class="overlay" id="addItemOverlay">
+        <div class="floating-box">
+            <h2>Add Work Item</h2>
+            <div class="form-group">
+                <label for="workItemTitle">Work Item</label>
+                <input type="text" id="workItemTitle" placeholder="Enter work item name">
+            </div>
+            <div class="form-group">
+                <label>Time Required</label>
+                <div class="time-inputs">
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: normal;">Hours</label>
+                        <input type="number" id="workItemHours" placeholder="Hours" min="0" value="0">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: normal;">Minutes</label>
+                        <input type="number" id="workItemMinutes" placeholder="Minutes" min="0" max="59" value="0">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="workItemPriority">Priority</label>
+                <select id="workItemPriority">
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="addWorkItem()">Add</button>
+                <button class="btn btn-secondary" onclick="clearAddItemForm()">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Time Overlay -->
+    <div class="overlay" id="addTimeOverlay">
+        <div class="floating-box">
+            <h2>Add More Time</h2>
+            <div class="form-group">
+                <label>Additional Time</label>
+                <div class="time-inputs">
+                    <input type="number" id="addTimeHours" placeholder="Hours" min="0" value="0">
+                    <input type="number" id="addTimeMinutes" placeholder="Minutes" min="0" max="59" value="0">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="addMoreTime()">Add</button>
+                <button class="btn btn-secondary" onclick="closeAddTimeDialog()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completion Overlay -->
+    <div class="overlay" id="completionOverlay">
+        <div class="floating-box">
+            <h2>Timer Complete!</h2>
+            <p style="margin: 20px 0; text-align: center; font-size: 18px;">What would you like to do?</p>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="completeWorkItem()">Complete Item</button>
+                <button class="btn btn-info" onclick="showAddTimeFromCompletion(currentTimerForAddTime)">Add More Time</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save/Load Overlay -->
+    <div class="overlay" id="saveLoadOverlay">
+        <div class="floating-box">
+            <h2>Save / Load</h2>
+            <div class="menu-buttons">
+                <button class="btn btn-primary" onclick="saveToJSON()">Save to JSON</button>
+                <button class="btn btn-info" onclick="document.getElementById('importFile').click()">Import JSON</button>
+                <button class="btn btn-danger" onclick="clearWork()">Clear Work</button>
+                <button class="btn btn-secondary" onclick="closeSaveLoadDialog()">Cancel</button>
+            </div>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importJSON(event)">
+        </div>
+    </div>
+
+    <!-- Add Note Overlay -->
+    <div class="overlay" id="addNoteOverlay">
+        <div class="floating-box">
+            <h2>Add Note</h2>
+            <div class="form-group">
+                <label for="noteTitle">Note Title</label>
+                <input type="text" id="noteTitle" placeholder="Enter note title" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-family: 'Courier New', monospace;">
+            </div>
+            <div class="form-group">
+                <label for="noteText">Note Text</label>
+                <textarea id="noteText" placeholder="Enter your note..." style="width: 100%; height: 100px; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-family: 'Courier New', monospace; resize: vertical;"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Color</label>
+                <div class="color-picker">
+                    <div class="color-option selected" style="background: #FFD700;" onclick="selectNoteColor('#FFD700', event)"></div>
+                    <div class="color-option" style="background: #FFB6C1;" onclick="selectNoteColor('#FFB6C1', event)"></div>
+                    <div class="color-option" style="background: #87CEEB;" onclick="selectNoteColor('#87CEEB', event)"></div>
+                    <div class="color-option" style="background: #98FB98;" onclick="selectNoteColor('#98FB98', event)"></div>
+                    <div class="color-option" style="background: #FFE4B5;" onclick="selectNoteColor('#FFE4B5', event)"></div>
+                    <div class="color-option" style="background: #DDA0DD;" onclick="selectNoteColor('#DDA0DD', event)"></div>
+                    <div class="color-option" style="background: #F0E68C;" onclick="selectNoteColor('#F0E68C', event)"></div>
+                    <div class="color-option" style="background: #FFDAB9;" onclick="selectNoteColor('#FFDAB9', event)"></div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="addNote()">Add</button>
+                <button class="btn btn-secondary" onclick="clearAddNoteForm()">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio for alarm -->
+    <audio id="alarmSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGF0fPTgjMGHm7A7+OZURE" loop></source>
+    </audio>
+
+    <!-- Context Menu for Notes -->
+    <div class="context-menu" id="noteContextMenu">
+        <div class="context-menu-item delete" onclick="deleteNoteFromContext()">Delete</div>
+    </div>
+
+    <!-- Context Menu for Work Items -->
+    <div class="context-menu" id="workItemContextMenu">
+        <div class="context-menu-item delete" onclick="deleteWorkItemFromContext()">Delete</div>
+    </div>
+
+    <script>
+        let workItems = [];
+        let draggedElement = null;
+        let activeTimers = {}; // Store multiple timers by work item ID
+        let currentTimerForAddTime = null; // Track which timer is getting more time added
+        let stickyNotes = [];
+        let selectedNoteColor = '#FFD700';
+        let draggedNote = null;
+        let noteOffsetX = 0;
+        let noteOffsetY = 0;
+        let contextMenuNoteId = null;
+        let contextMenuWorkItemId = null;
+
+        // Load from localStorage on startup
+        window.addEventListener('DOMContentLoaded', function() {
+            loadFromLocalStorage();
+            renderWorkItems();
+            renderNotes();
+            // Don't show timer sidebar on initial load
+        });
+
+        // Show/Hide Dialogs
+        function showAddItemDialog() {
+            document.getElementById('addItemOverlay').classList.add('active');
+        }
+
+        function closeAddItemDialog() {
+            document.getElementById('addItemOverlay').classList.remove('active');
+        }
+
+        function showSaveLoadDialog() {
+            document.getElementById('saveLoadOverlay').classList.add('active');
+        }
+
+        function closeSaveLoadDialog() {
+            document.getElementById('saveLoadOverlay').classList.remove('active');
+        }
+
+        function clearAddItemForm() {
+            document.getElementById('workItemTitle').value = '';
+            document.getElementById('workItemHours').value = '0';
+            document.getElementById('workItemMinutes').value = '0';
+            document.getElementById('workItemPriority').value = 'high';
+        }
+
+        // Add Work Item
+        function addWorkItem() {
+            const title = document.getElementById('workItemTitle').value.trim();
+            const hours = parseInt(document.getElementById('workItemHours').value) || 0;
+            const minutes = parseInt(document.getElementById('workItemMinutes').value) || 0;
+            const priority = document.getElementById('workItemPriority').value;
+
+            if (!title) {
+                alert('Please enter a work item name');
+                return;
+            }
+
+            if (hours === 0 && minutes === 0) {
+                alert('Please enter a time duration');
+                return;
+            }
+
+            const totalMinutes = hours * 60 + minutes;
+            const workItem = {
+                id: Date.now(),
+                title: title,
+                totalMinutes: totalMinutes,
+                priority: priority,
+                locked: false
+            };
+
+            workItems.push(workItem);
+            saveToLocalStorage();
+            renderWorkItems();
+            clearAddItemForm();
+            closeAddItemDialog();
+        }
+
+        // Render Work Items
+        function renderWorkItems() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+
+            if (workItems.length === 0) return;
+
+            const totalMinutes = workItems.reduce((sum, item) => sum + item.totalMinutes, 0);
+
+            workItems.forEach((item, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-wrapper';
+
+                // Use flexbox grow based on time proportion
+                wrapper.style.flexGrow = item.totalMinutes;
+                wrapper.style.flexShrink = 1;
+                wrapper.style.flexBasis = '0';
+
+                // Determine button state
+                let buttonClass = '';
+                let buttonText = 'Start';
+                let buttonAction = `startTimer(${index})`;
+
+                // Check if there's a paused timer for this item
+                let displayTime = '';
+                const hours = Math.floor(item.totalMinutes / 60);
+                const minutes = item.totalMinutes % 60;
+                const timeText = `${hours}h ${minutes}m`;
+
+                if (item.locked) {
+                    buttonClass = 'locked';
+                    buttonText = '✓';
+                    buttonAction = '';
+                    displayTime = timeText;
+                } else if (activeTimers[item.id]) {
+                    const timer = activeTimers[item.id];
+                    if (timer.paused) {
+                        buttonClass = '';
+                        buttonText = 'Resume';
+                        buttonAction = `resumeTimer(${item.id})`;
+
+                        // Calculate time left and time recorded
+                        const remainingHours = Math.floor(timer.remainingSeconds / 3600);
+                        const remainingMinutes = Math.floor((timer.remainingSeconds % 3600) / 60);
+                        const recordedSeconds = timer.totalSeconds - timer.remainingSeconds;
+                        const recordedHours = Math.floor(recordedSeconds / 3600);
+                        const recordedMinutes = Math.floor((recordedSeconds % 3600) / 60);
+
+                        displayTime = `${remainingHours}h ${remainingMinutes}m (${recordedHours}h ${recordedMinutes}m)`;
+                    } else {
+                        buttonClass = 'pause-btn';
+                        buttonText = 'Pause';
+                        buttonAction = `pauseTimerAndClose(${item.id})`;
+                        displayTime = timeText;
+                    }
+                } else {
+                    displayTime = timeText;
+                }
+
+                wrapper.innerHTML = `
+                    <button class="card-control-btn ${buttonClass}"
+                            onclick="${buttonAction}">
+                        ${buttonText}
+                    </button>
+                `;
+
+                const card = document.createElement('div');
+                card.className = `work-card ${item.priority}`;
+                card.draggable = true;
+                card.dataset.index = index;
+
+                // Format title: max 40 chars, wrap at word boundary near 20 chars
+                let formattedTitle = item.title.substring(0, 40);
+                if (formattedTitle.length > 20) {
+                    // Find the last space before or at position 20
+                    let breakPoint = formattedTitle.lastIndexOf(' ', 20);
+                    // If no space found or it's too early, break at 20
+                    if (breakPoint === -1 || breakPoint < 10) {
+                        breakPoint = 20;
+                    }
+                    formattedTitle = formattedTitle.substring(0, breakPoint).trim() + '<br>' + formattedTitle.substring(breakPoint).trim();
+                }
+
+                card.innerHTML = `
+                    <div class="card-content">
+                        <div class="card-title">${formattedTitle}</div>
+                        <div class="card-time">${displayTime}</div>
+                    </div>
+                `;
+
+                // Drag events
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragover', handleDragOver);
+                card.addEventListener('drop', handleDrop);
+                card.addEventListener('dragend', handleDragEnd);
+                card.addEventListener('contextmenu', (e) => showWorkItemContextMenu(e, item.id));
+
+                wrapper.appendChild(card);
+                container.appendChild(wrapper);
+            });
+        }
+
+        // Drag and Drop
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+
+            if (draggedElement !== this) {
+                const draggedIndex = parseInt(draggedElement.dataset.index);
+                const targetIndex = parseInt(this.dataset.index);
+
+                const draggedItem = workItems[draggedIndex];
+                workItems.splice(draggedIndex, 1);
+                workItems.splice(targetIndex, 0, draggedItem);
+
+                saveToLocalStorage();
+                renderWorkItems();
+            }
+
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+        }
+
+        // Timer Functions
+        function startTimer(index) {
+            const item = workItems[index];
+
+            // Create new timer
+            const timer = {
+                itemId: item.id,
+                index: index,
+                remainingSeconds: item.totalMinutes * 60,
+                totalSeconds: item.totalMinutes * 60,
+                paused: false,
+                interval: null
+            };
+
+            activeTimers[item.id] = timer;
+
+            // Start the timer interval
+            timer.interval = setInterval(() => updateTimer(item.id), 1000);
+
+            renderWorkItems();
+            renderActiveTimers();
+            updateSidebarVisibility();
+        }
+
+        function updateTimer(itemId) {
+            const timer = activeTimers[itemId];
+            if (!timer || timer.paused) return;
+
+            if (timer.remainingSeconds > 0) {
+                timer.remainingSeconds--;
+                renderActiveTimers();
+                // Auto-save timer progress every 10 seconds
+                if (timer.remainingSeconds % 10 === 0) {
+                    saveToLocalStorage();
+                }
+            } else {
+                // Timer completed
+                clearInterval(timer.interval);
+                playAlarm();
+                showCompletionDialog(itemId);
+            }
+        }
+
+        function pauseTimer(itemId) {
+            const timer = activeTimers[itemId];
+            if (timer) {
+                timer.paused = true;
+                renderWorkItems();
+                renderActiveTimers();
+            }
+        }
+
+        function pauseTimerAndClose(itemId) {
+            const timer = activeTimers[itemId];
+            if (timer) {
+                timer.paused = true;
+                saveToLocalStorage();
+                renderWorkItems();
+                renderActiveTimers();
+            }
+        }
+
+        function resumeTimer(itemId) {
+            const timer = activeTimers[itemId];
+            if (timer) {
+                timer.paused = false;
+                renderWorkItems();
+                renderActiveTimers();
+            }
+        }
+
+        function playTimer(itemId) {
+            resumeTimer(itemId);
+        }
+
+        function cancelTimer(itemId) {
+            const timer = activeTimers[itemId];
+            if (timer) {
+                clearInterval(timer.interval);
+                delete activeTimers[itemId];
+                saveToLocalStorage();
+                renderWorkItems();
+                renderActiveTimers();
+                updateSidebarVisibility();
+            }
+        }
+
+        function playAlarm() {
+            // Always use Web Audio API for better Safari compatibility
+            playBeep();
+        }
+
+        function playBeep() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                // Create a pleasant alarm sound with multiple beeps
+                oscillator.frequency.value = 880; // A5 note
+                oscillator.type = 'sine';
+
+                // First beep
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+                // Second beep
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + 0.3);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                // Third beep
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + 0.6);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.8);
+            } catch (e) {
+                console.error('Could not play beep:', e);
+                // Final fallback - try the audio element
+                try {
+                    const alarm = document.getElementById('alarmSound');
+                    alarm.currentTime = 0;
+                    alarm.play().catch(() => {
+                        alert('Timer Complete!');
+                    });
+                } catch (err) {
+                    alert('Timer Complete!');
+                }
+            }
+        }
+
+        // Render Active Timers in Sidebar
+        function renderActiveTimers() {
+            const container = document.getElementById('activeTimersContainer');
+            container.innerHTML = '';
+
+            Object.keys(activeTimers).forEach(itemId => {
+                const timer = activeTimers[itemId];
+                const item = workItems[timer.index];
+
+                if (!item) {
+                    delete activeTimers[itemId];
+                    return;
+                }
+
+                const hours = Math.floor(timer.remainingSeconds / 3600);
+                const minutes = Math.floor((timer.remainingSeconds % 3600) / 60);
+                const seconds = timer.remainingSeconds % 60;
+                const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                const progress = (timer.remainingSeconds / timer.totalSeconds) * 100;
+
+                const timerCard = document.createElement('div');
+                timerCard.className = 'active-timer-card';
+                timerCard.innerHTML = `
+                    <h4>${item.title}</h4>
+                    <div class="timer-clock-small">${timeString}</div>
+                    <div class="progress-bar-small">
+                        <div class="progress-fill-small" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="timer-controls">
+                        ${timer.paused ?
+                            `<button class="timer-btn play" onclick="playTimer(${itemId})">Play</button>` :
+                            `<button class="timer-btn pause" onclick="pauseTimer(${itemId})">Pause</button>`
+                        }
+                        <button class="timer-btn cancel" onclick="cancelTimer(${itemId})">Cancel</button>
+                    </div>
+                `;
+                container.appendChild(timerCard);
+            });
+        }
+
+        function updateSidebarVisibility() {
+            // Sidebar is now always visible, no need to update
+        }
+
+        // Add Time Functions
+        function showAddTimeDialog(itemId) {
+            currentTimerForAddTime = itemId;
+            document.getElementById('addTimeOverlay').classList.add('active');
+        }
+
+        function closeAddTimeDialog() {
+            document.getElementById('addTimeOverlay').classList.remove('active');
+            document.getElementById('addTimeHours').value = '0';
+            document.getElementById('addTimeMinutes').value = '0';
+            currentTimerForAddTime = null;
+        }
+
+        function addMoreTime() {
+            if (!currentTimerForAddTime) return;
+
+            const hours = parseInt(document.getElementById('addTimeHours').value) || 0;
+            const minutes = parseInt(document.getElementById('addTimeMinutes').value) || 0;
+            const additionalSeconds = (hours * 60 + minutes) * 60;
+
+            if (additionalSeconds === 0) {
+                alert('Please enter a time duration');
+                return;
+            }
+
+            const timer = activeTimers[currentTimerForAddTime];
+            if (timer) {
+                timer.remainingSeconds += additionalSeconds;
+                timer.totalSeconds += additionalSeconds;
+                workItems[timer.index].totalMinutes += (hours * 60 + minutes);
+
+                saveToLocalStorage();
+                renderWorkItems();
+                renderActiveTimers();
+            }
+
+            closeAddTimeDialog();
+        }
+
+        function showAddTimeFromCompletion(itemId) {
+            document.getElementById('completionOverlay').classList.remove('active');
+            showAddTimeDialog(itemId);
+        }
+
+        // Completion Functions
+        function showCompletionDialog(itemId) {
+            currentTimerForAddTime = itemId;
+            document.getElementById('completionOverlay').classList.add('active');
+        }
+
+        function completeWorkItem() {
+            if (!currentTimerForAddTime) return;
+
+            const timer = activeTimers[currentTimerForAddTime];
+            if (timer) {
+                workItems[timer.index].locked = true;
+                delete activeTimers[currentTimerForAddTime];
+                saveToLocalStorage();
+                renderWorkItems();
+                renderActiveTimers();
+                updateSidebarVisibility();
+            }
+
+            document.getElementById('completionOverlay').classList.remove('active');
+            currentTimerForAddTime = null;
+        }
+
+        // Notes Functions
+        function showAddNoteDialog() {
+            document.getElementById('addNoteOverlay').classList.add('active');
+        }
+
+        function closeAddNoteDialog() {
+            document.getElementById('addNoteOverlay').classList.remove('active');
+        }
+
+        function selectNoteColor(color, event) {
+            selectedNoteColor = color;
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        function clearAddNoteForm() {
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteText').value = '';
+            selectedNoteColor = '#FFD700';
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('.color-option')[0].classList.add('selected');
+        }
+
+        function addNote() {
+            const title = document.getElementById('noteTitle').value.trim();
+            const text = document.getElementById('noteText').value.trim();
+
+            if (!title) {
+                alert('Please enter a note title');
+                return;
+            }
+
+            if (!text) {
+                alert('Please enter note text');
+                return;
+            }
+
+            const note = {
+                id: Date.now(),
+                title: title,
+                text: text,
+                color: selectedNoteColor,
+                x: 50,
+                y: 50,
+                collapsed: false
+            };
+
+            stickyNotes.push(note);
+            saveToLocalStorage();
+            renderNotes();
+            clearAddNoteForm();
+            closeAddNoteDialog();
+        }
+
+        function deleteNote(noteId) {
+            stickyNotes = stickyNotes.filter(note => note.id !== noteId);
+            saveToLocalStorage();
+            renderNotes();
+        }
+
+        function renderNotes() {
+            const container = document.getElementById('notesSection');
+
+            // Remove existing notes
+            const existingNotes = container.querySelectorAll('.sticky-note');
+            existingNotes.forEach(note => note.remove());
+
+            stickyNotes.forEach(note => {
+                const noteEl = document.createElement('div');
+                noteEl.className = `sticky-note ${note.collapsed ? 'collapsed' : ''}`;
+                noteEl.style.backgroundColor = note.color;
+                noteEl.style.left = note.x + 'px';
+                noteEl.style.top = note.y + 'px';
+                noteEl.dataset.noteId = note.id;
+
+                const collapseIcon = note.collapsed ? '▼' : '−';
+
+                // When collapsed, show only title in header. When expanded, show title in content
+                if (note.collapsed) {
+                    noteEl.innerHTML = `
+                        <div class="note-header">
+                            <div class="note-title-header">${note.title || 'Untitled'}</div>
+                            <button class="note-btn" onclick="toggleNoteCollapse(${note.id})" title="Expand">${collapseIcon}</button>
+                        </div>
+                        <div class="note-content" style="display: none;"></div>
+                    `;
+                } else {
+                    noteEl.innerHTML = `
+                        <div class="note-header">
+                            <button class="note-btn" onclick="toggleNoteCollapse(${note.id})" title="Collapse">${collapseIcon}</button>
+                        </div>
+                        <div class="note-content"><strong>${note.title || 'Untitled'}</strong><br>${note.text}</div>
+                    `;
+                }
+
+                noteEl.addEventListener('mousedown', startNoteDrag);
+                noteEl.addEventListener('contextmenu', (e) => showNoteContextMenu(e, note.id));
+
+                container.appendChild(noteEl);
+            });
+        }
+
+        function toggleNoteCollapse(noteId) {
+            const note = stickyNotes.find(n => n.id === noteId);
+            if (note) {
+                note.collapsed = !note.collapsed;
+                saveToLocalStorage();
+                renderNotes();
+            }
+        }
+
+        function showNoteContextMenu(e, noteId) {
+            e.preventDefault();
+            contextMenuNoteId = noteId;
+            const contextMenu = document.getElementById('noteContextMenu');
+            contextMenu.style.left = e.clientX + 'px';
+            contextMenu.style.top = e.clientY + 'px';
+            contextMenu.classList.add('active');
+        }
+
+        function closeContextMenu() {
+            document.getElementById('noteContextMenu').classList.remove('active');
+            contextMenuNoteId = null;
+        }
+
+        function deleteNoteFromContext() {
+            if (contextMenuNoteId !== null) {
+                deleteNote(contextMenuNoteId);
+                closeContextMenu();
+            }
+        }
+
+        function startNoteDrag(e) {
+            if (e.target.classList.contains('note-btn')) return;
+
+            draggedNote = this;
+            const rect = draggedNote.getBoundingClientRect();
+            const parentRect = document.getElementById('notesSection').getBoundingClientRect();
+
+            noteOffsetX = e.clientX - rect.left;
+            noteOffsetY = e.clientY - rect.top;
+
+            draggedNote.classList.add('dragging');
+
+            document.addEventListener('mousemove', dragNote);
+            document.addEventListener('mouseup', endNoteDrag);
+        }
+
+        function dragNote(e) {
+            if (!draggedNote) return;
+
+            const parentRect = document.getElementById('notesSection').getBoundingClientRect();
+            let newX = e.clientX - parentRect.left - noteOffsetX;
+            let newY = e.clientY - parentRect.top - noteOffsetY;
+
+            // Keep within bounds
+            newX = Math.max(0, Math.min(newX, parentRect.width - draggedNote.offsetWidth));
+            newY = Math.max(0, Math.min(newY, parentRect.height - draggedNote.offsetHeight));
+
+            draggedNote.style.left = newX + 'px';
+            draggedNote.style.top = newY + 'px';
+        }
+
+        function endNoteDrag(e) {
+            if (!draggedNote) return;
+
+            draggedNote.classList.remove('dragging');
+
+            // Update note position in data
+            const noteId = parseInt(draggedNote.dataset.noteId);
+            const note = stickyNotes.find(n => n.id === noteId);
+            if (note) {
+                note.x = parseInt(draggedNote.style.left);
+                note.y = parseInt(draggedNote.style.top);
+                saveToLocalStorage();
+            }
+
+            document.removeEventListener('mousemove', dragNote);
+            document.removeEventListener('mouseup', endNoteDrag);
+            draggedNote = null;
+        }
+
+        // Save/Load Functions
+        function saveToJSON() {
+            const exportData = {
+                workItems: workItems,
+                stickyNotes: stickyNotes
+            };
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'time-management-' + new Date().toISOString().split('T')[0] + '.json';
+            link.click();
+            URL.revokeObjectURL(url);
+            closeSaveLoadDialog();
+        }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    // Handle old format (just array) or new format (object)
+                    if (Array.isArray(imported)) {
+                        workItems = imported;
+                    } else {
+                        workItems = imported.workItems || [];
+                        stickyNotes = imported.stickyNotes || [];
+                    }
+                    saveToLocalStorage();
+                    renderWorkItems();
+                    renderNotes();
+                    closeSaveLoadDialog();
+                    alert('Data imported successfully!');
+                } catch (error) {
+                    alert('Error importing file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function clearWork() {
+            if (confirm('Are you sure you want to clear all work items?')) {
+                workItems = [];
+                saveToLocalStorage();
+                renderWorkItems();
+                closeSaveLoadDialog();
+            }
+        }
+
+        // LocalStorage Functions
+        function saveToLocalStorage() {
+            const data = {
+                workItems: workItems,
+                stickyNotes: stickyNotes,
+                activeTimers: serializeActiveTimers()
+            };
+            localStorage.setItem('timeManagementData', JSON.stringify(data));
+        }
+
+        function serializeActiveTimers() {
+            const serializedTimers = {};
+            Object.keys(activeTimers).forEach(itemId => {
+                const timer = activeTimers[itemId];
+                serializedTimers[itemId] = {
+                    itemId: timer.itemId,
+                    index: timer.index,
+                    remainingSeconds: timer.remainingSeconds,
+                    totalSeconds: timer.totalSeconds,
+                    paused: timer.paused,
+                    timestamp: Date.now()
+                };
+            });
+            return serializedTimers;
+        }
+
+        function deserializeActiveTimers(savedTimers) {
+            if (!savedTimers) return;
+
+            Object.keys(savedTimers).forEach(itemId => {
+                const saved = savedTimers[itemId];
+                const item = workItems.find(item => item.id == itemId);
+
+                if (item) {
+                    const timer = {
+                        itemId: saved.itemId,
+                        index: workItems.indexOf(item),
+                        remainingSeconds: saved.remainingSeconds,
+                        totalSeconds: saved.totalSeconds,
+                        paused: saved.paused,
+                        interval: null
+                    };
+
+                    activeTimers[itemId] = timer;
+
+                    // Resume timer if it wasn't paused
+                    if (!timer.paused) {
+                        timer.interval = setInterval(() => updateTimer(itemId), 1000);
+                    }
+                }
+            });
+
+            if (Object.keys(activeTimers).length > 0) {
+                renderActiveTimers();
+            }
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('timeManagementData');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    // Handle old format (just array) or new format (object)
+                    if (Array.isArray(data)) {
+                        workItems = data;
+                        stickyNotes = [];
+                    } else {
+                        workItems = data.workItems || [];
+                        stickyNotes = data.stickyNotes || [];
+                        // Ensure all notes have collapsed and title properties
+                        stickyNotes = stickyNotes.map(note => ({
+                            ...note,
+                            collapsed: note.collapsed !== undefined ? note.collapsed : false,
+                            title: note.title || 'Untitled'
+                        }));
+
+                        // Restore active timers
+                        deserializeActiveTimers(data.activeTimers);
+                    }
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    workItems = [];
+                    stickyNotes = [];
+                }
+            }
+        }
+
+        // Close overlays when clicking outside
+        document.querySelectorAll('.overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this && this.id !== 'completionOverlay') {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        // Work Item Context Menu Functions
+        function showWorkItemContextMenu(e, itemId) {
+            e.preventDefault();
+            contextMenuWorkItemId = itemId;
+            const contextMenu = document.getElementById('workItemContextMenu');
+            contextMenu.style.left = e.clientX + 'px';
+            contextMenu.style.top = e.clientY + 'px';
+            contextMenu.classList.add('active');
+        }
+
+        function closeWorkItemContextMenu() {
+            document.getElementById('workItemContextMenu').classList.remove('active');
+            contextMenuWorkItemId = null;
+        }
+
+        function deleteWorkItemFromContext() {
+            if (contextMenuWorkItemId !== null) {
+                // Cancel any active timer for this item
+                if (activeTimers[contextMenuWorkItemId]) {
+                    cancelTimer(contextMenuWorkItemId);
+                }
+
+                // Remove the work item
+                workItems = workItems.filter(item => item.id !== contextMenuWorkItemId);
+                saveToLocalStorage();
+                renderWorkItems();
+                closeWorkItemContextMenu();
+            }
+        }
+
+        // Close context menus when clicking anywhere
+        document.addEventListener('click', function(e) {
+            const noteContextMenu = document.getElementById('noteContextMenu');
+            const workItemContextMenu = document.getElementById('workItemContextMenu');
+
+            if (!noteContextMenu.contains(e.target) && noteContextMenu.classList.contains('active')) {
+                closeContextMenu();
+            }
+
+            if (!workItemContextMenu.contains(e.target) && workItemContextMenu.classList.contains('active')) {
+                closeWorkItemContextMenu();
+            }
+        });
+    </script>
+</body>
+</html>
