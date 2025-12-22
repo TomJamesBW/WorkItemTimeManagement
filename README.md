@@ -66,7 +66,18 @@ A single-page time management application for tracking work items with visual ti
 
 ## Version History
 
-### v1.26 (Current)
+### v1.27 (Current)
+**Bug Fixes:**
+- Increased Sort button spacing from left: 200px to 230px for better separation from Save/Load button
+- Disabled resize handle on collapsed notes (resize: none when collapsed)
+
+**Changes:**
+- Sort button now has 30px more spacing to prevent overlap
+- Collapsed notes cannot be resized until expanded
+
+---
+
+### v1.26
 **Bug Fixes:**
 - Fixed font sizing to apply uniformly across all work items based on average card width
 - Fonts now only shrink when there are many cards (not individual card basis)
@@ -542,4 +553,4 @@ When timer finishes:
 This is a single-page application created for personal time management. Feel free to use and modify as needed.
 
 ## Support
-For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.26).
+For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.27).
