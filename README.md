@@ -15,7 +15,7 @@ A single-page time management application for tracking work items with a kanban 
 - **Time Tracking**: Count-up timers track actual time spent on tasks
 - **Date-based Logging**: All time recordings include date stamps
 - **Work Item Details**: Click any card to view title, description, total logged time, and last 7 days breakdown
-- **Context Menu**: Right-click to delete work items
+- **Context Menu**: Right-click to archive or delete work items
 - **Description Field**: Each work item includes an optional description
 
 ### Timer Sidebar
@@ -39,8 +39,10 @@ A single-page time management application for tracking work items with a kanban 
 
 ### Data Management
 - **LocalStorage**: Automatic saving of all data including active timer states
-- **JSON Export**: Save work items, notes, and active timers to JSON file
-- **JSON Import**: Load work items, notes, and active timers from JSON file
+- **JSON Export**: Save work items, notes, archived items, and active timers to JSON file
+- **JSON Import**: Load work items, notes, archived items, and active timers from JSON file
+- **Archive System**: Archive completed work items to preserve title, description, and priority (time data removed)
+- **Archive View**: Browse archived items with restore or permanent delete options
 - **Clear Work**: Option to clear all work items, notes, and timers with confirmation dialog
 
 ## Technical Specifications
@@ -504,6 +506,18 @@ A single-page time management application for tracking work items with a kanban 
 }
 ```
 
+### Archived Items
+```javascript
+{
+  id: timestamp,
+  title: string,
+  description: string,
+  priority: 'high' | 'medium' | 'low' | 'none',
+  archivedDate: ISO date string // When item was archived
+  // Note: timeRecordings are NOT preserved in archive
+}
+```
+
 ### Active Timers (v2.0)
 ```javascript
 {
@@ -567,16 +581,25 @@ A single-page time management application for tracking work items with a kanban 
 6. Click **−** button to collapse/expand
 7. Right-click to delete
 
+### Archiving Work Items
+1. **Archive an item**: Right-click work item and select "Archive"
+2. Confirmation dialog warns that time tracking data will be permanently removed
+3. Archived items retain only title, description, and priority
+4. **View archive**: Click Save/Load button → View Archive
+5. **Restore from archive**: Click "Restore" button on archived item (creates new work item with no time data)
+6. **Delete archived item**: Click "Delete" button for permanent removal
+
 ### Saving/Loading
-- **Save to JSON**: Export work items, notes, and active timers to file
-- **Import JSON**: Load work items, notes, and active timers from file
+- **Save to JSON**: Export work items, notes, archived items, and active timers to file
+- **Import JSON**: Load work items, notes, archived items, and active timers from file
+- **View Archive**: Browse all archived work items with options to restore or permanently delete
 - **Clear Work**: Remove all work items, notes, and timers (with confirmation dialog)
 - Auto-save to localStorage every 60 seconds for active timers
 - Timers automatically restore on page refresh
 - Full backward compatibility with v1.x JSON exports (automatic migration)
 
 ## Keyboard Shortcuts
-- **Right-click** on work item: Delete menu
+- **Right-click** on work item: Archive or delete menu
 - **Right-click** on note: Delete menu
 - **Drag** work item card: Move between priority columns
 - **Drag** work item to sidebar: Start timer
@@ -593,14 +616,15 @@ A single-page time management application for tracking work items with a kanban 
 
 ## Future Enhancements
 - Work item categories/tags
-- Search and filter capabilities
+- Search and filter capabilities within active items and archive
 - Undo/redo functionality
 - Extended time breakdown reports (monthly, yearly)
 - Export time recordings to CSV
-- Statistics dashboard
+- Statistics dashboard with charts and analytics
 - Multiple timer instances per item
 - Dark mode option
-- Work item archiving
+- Archive with time data preservation option
+- Bulk archive operations
 
 ## License
 This is a single-page application created for personal time management. Feel free to use and modify as needed.

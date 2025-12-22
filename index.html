@@ -783,6 +783,7 @@
             <div class="menu-buttons">
                 <button class="btn btn-primary" onclick="saveToJSON()">Save to JSON</button>
                 <button class="btn btn-info" onclick="document.getElementById('importFile').click()">Import JSON</button>
+                <button class="btn btn-info" onclick="showArchiveView()">View Archive</button>
                 <button class="btn btn-danger" onclick="clearWork()">Clear Work</button>
                 <button class="btn btn-secondary" onclick="closeSaveLoadDialog()">Cancel</button>
             </div>
@@ -834,6 +835,7 @@
 
     <!-- Context Menu for Work Items -->
     <div class="context-menu" id="workItemContextMenu">
+        <div class="context-menu-item" onclick="archiveWorkItemFromContext()">Archive</div>
         <div class="context-menu-item delete" onclick="deleteWorkItemFromContext()">Delete</div>
     </div>
 
@@ -849,11 +851,50 @@
         </div>
     </div>
 
+    <!-- Archive View Overlay -->
+    <div class="overlay" id="archiveViewOverlay">
+        <div class="floating-box" style="max-width: 600px; max-height: 80vh;">
+            <h2>Archived Items</h2>
+            <div id="archiveList" style="max-height: 400px; overflow-y: auto; margin: 20px 0;">
+                <!-- Archive items will be rendered here -->
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="closeArchiveView()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Archive Confirmation Overlay -->
+    <div class="overlay" id="archiveConfirmationOverlay">
+        <div class="floating-box">
+            <h2>Archive Work Item</h2>
+            <div style="margin: 20px 0;">
+                <p style="font-size: 16px; margin-bottom: 15px; color: #333;">You are about to archive:</p>
+                <p style="font-weight: bold; font-size: 18px; color: #000; margin-bottom: 20px;" id="archiveConfirmItemTitle"></p>
+                <div style="background: #FFF3CD; border: 2px solid #FFC107; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 24px; margin-right: 10px;">⚠️</span>
+                        <strong style="color: #856404;">Warning: Time Data Will Be Lost</strong>
+                    </div>
+                    <p style="color: #856404; font-size: 14px; line-height: 1.5;">
+                        Archiving will permanently remove all time tracking data for this item. Only the title, description, and priority will be saved. This action cannot be undone.
+                    </p>
+                </div>
+                <p style="font-size: 14px; color: #666;">Do you want to continue?</p>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="confirmArchiveWorkItem()">Yes, Archive</button>
+                <button class="btn btn-secondary" onclick="closeArchiveConfirmation()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let workItems = [];
         let draggedElement = null;
         let activeTimers = {}; // Store timers by work item ID
         let stickyNotes = [];
+        let archivedItems = []; // Store archived items (title, description, priority only)
         let selectedNoteColor = '#FFD700';
         let draggedNote = null;
         let noteOffsetX = 0;
@@ -1490,6 +1531,7 @@
             const exportData = {
                 workItems: workItems,
                 stickyNotes: stickyNotes,
+                archivedItems: archivedItems,
                 activeTimers: serializeActiveTimers()
             };
             const dataStr = JSON.stringify(exportData, null, 2);
@@ -1520,6 +1562,7 @@
                         workItems = workItems.map(item => migrateWorkItem(item));
 
                         stickyNotes = imported.stickyNotes || [];
+                        archivedItems = imported.archivedItems || [];
                         // Restore active timers if present
                         if (imported.activeTimers) {
                             deserializeActiveTimers(imported.activeTimers);
@@ -1584,6 +1627,7 @@
 
             workItems = [];
             stickyNotes = [];
+            archivedItems = [];
             saveToLocalStorage();
             renderWorkItems();
             renderNotes();
@@ -1600,6 +1644,7 @@
             const data = {
                 workItems: workItems,
                 stickyNotes: stickyNotes,
+                archivedItems: archivedItems,
                 activeTimers: serializeActiveTimers()
             };
             localStorage.setItem('timeManagementData', JSON.stringify(data));
@@ -1659,6 +1704,7 @@
                     if (Array.isArray(data)) {
                         workItems = migrateOldWorkItems(data);
                         stickyNotes = [];
+                        archivedItems = [];
                     } else {
                         workItems = data.workItems || [];
                         // Migrate old format work items to new format
@@ -1672,6 +1718,8 @@
                             title: note.title || 'Untitled'
                         }));
 
+                        archivedItems = data.archivedItems || [];
+
                         // Restore active timers
                         deserializeActiveTimers(data.activeTimers);
                     }
@@ -1679,6 +1727,7 @@
                     console.error('Error loading data:', error);
                     workItems = [];
                     stickyNotes = [];
+                    archivedItems = [];
                 }
             }
         }
@@ -1724,6 +1773,134 @@
                 renderWorkItems();
                 renderActiveTimers();
                 closeWorkItemContextMenu();
+            }
+        }
+
+        function archiveWorkItemFromContext() {
+            if (contextMenuWorkItemId !== null) {
+                const item = workItems.find(i => i.id === contextMenuWorkItemId);
+                if (item) {
+                    // Show confirmation dialog with item title
+                    document.getElementById('archiveConfirmItemTitle').textContent = item.title;
+                    document.getElementById('archiveConfirmationOverlay').classList.add('active');
+                    closeWorkItemContextMenu();
+                }
+            }
+        }
+
+        function closeArchiveConfirmation() {
+            document.getElementById('archiveConfirmationOverlay').classList.remove('active');
+            contextMenuWorkItemId = null;
+        }
+
+        function confirmArchiveWorkItem() {
+            if (contextMenuWorkItemId !== null) {
+                const item = workItems.find(i => i.id === contextMenuWorkItemId);
+                if (item) {
+                    // Stop any active timer for this item
+                    if (activeTimers[contextMenuWorkItemId]) {
+                        const timer = activeTimers[contextMenuWorkItemId];
+                        if (timer.interval) {
+                            clearInterval(timer.interval);
+                        }
+                        delete activeTimers[contextMenuWorkItemId];
+                    }
+
+                    // Create archived item with only title, description, and priority
+                    const archivedItem = {
+                        id: Date.now(), // New ID for archived item
+                        title: item.title,
+                        description: item.description || '',
+                        priority: item.priority,
+                        archivedDate: new Date().toISOString()
+                    };
+
+                    archivedItems.push(archivedItem);
+
+                    // Remove from active work items
+                    workItems = workItems.filter(i => i.id !== contextMenuWorkItemId);
+
+                    saveToLocalStorage();
+                    renderWorkItems();
+                    renderActiveTimers();
+                    closeArchiveConfirmation();
+                }
+            }
+        }
+
+        // Archive View Functions
+        function showArchiveView() {
+            renderArchiveList();
+            closeSaveLoadDialog();
+            document.getElementById('archiveViewOverlay').classList.add('active');
+        }
+
+        function closeArchiveView() {
+            document.getElementById('archiveViewOverlay').classList.remove('active');
+        }
+
+        function renderArchiveList() {
+            const container = document.getElementById('archiveList');
+
+            if (archivedItems.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #888; padding: 40px 20px;">No archived items</p>';
+                return;
+            }
+
+            container.innerHTML = archivedItems.map(item => {
+                const archivedDate = new Date(item.archivedDate).toLocaleDateString();
+                const priorityColors = {
+                    high: '#FFB3BA',
+                    medium: '#FFE4A3',
+                    low: '#B4E7B4',
+                    none: '#AED6F1'
+                };
+                const bgColor = priorityColors[item.priority] || priorityColors.none;
+
+                return `
+                    <div style="background: ${bgColor}; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px;">${item.title}</div>
+                            <div style="font-size: 14px; color: #555; margin-bottom: 5px;">${item.description || 'No description'}</div>
+                            <div style="font-size: 12px; color: #666;">Priority: ${item.priority.charAt(0).toUpperCase() + item.priority.slice(1)} • Archived: ${archivedDate}</div>
+                        </div>
+                        <div style="display: flex; gap: 5px; margin-left: 10px;">
+                            <button class="btn btn-info" style="padding: 8px 12px; font-size: 12px;" onclick="restoreArchivedItem(${item.id})">Restore</button>
+                            <button class="btn btn-danger" style="padding: 8px 12px; font-size: 12px;" onclick="deleteArchivedItem(${item.id})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function restoreArchivedItem(archivedItemId) {
+            const archivedItem = archivedItems.find(i => i.id === archivedItemId);
+            if (archivedItem) {
+                // Create new work item from archived item
+                const restoredItem = {
+                    id: Date.now(), // New ID for restored item
+                    title: archivedItem.title,
+                    description: archivedItem.description,
+                    priority: archivedItem.priority,
+                    timeRecordings: [] // Start fresh with no time recordings
+                };
+
+                workItems.push(restoredItem);
+
+                // Remove from archive
+                archivedItems = archivedItems.filter(i => i.id !== archivedItemId);
+
+                saveToLocalStorage();
+                renderWorkItems();
+                renderArchiveList();
+            }
+        }
+
+        function deleteArchivedItem(archivedItemId) {
+            if (confirm('Are you sure you want to permanently delete this archived item?')) {
+                archivedItems = archivedItems.filter(i => i.id !== archivedItemId);
+                saveToLocalStorage();
+                renderArchiveList();
             }
         }
 
