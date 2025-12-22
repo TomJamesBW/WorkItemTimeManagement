@@ -68,7 +68,7 @@ A single-page time management application for tracking work items with visual ti
 
 ### v1.27 (Current)
 **Bug Fixes:**
-- Increased Sort button spacing from left: 200px to 230px for better separation from Save/Load button
+- Increased Sort button spacing from left: 200px to 205px for better separation from Save/Load button
 - Disabled resize handle on collapsed notes (resize: none when collapsed)
 
 **Changes:**
