@@ -28,13 +28,12 @@
         }
 
         .work-items-section {
-            height: 60%;
-            overflow-x: hidden;
-            overflow-y: auto;
+            height: 50%;
+            overflow-x: auto;
+            overflow-y: hidden;
             position: relative;
             display: flex;
-            flex-direction: column;
-            padding: 90px 20px 20px 20px;
+            align-items: center;
         }
 
         .work-items-title {
@@ -51,12 +50,12 @@
         }
 
         .notes-section {
-            height: 40%;
+            height: 50%;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-top: 2px solid rgba(255, 255, 255, 0.3);
             position: relative;
-            overflow: auto;
+            overflow: hidden;
         }
 
         .notes-title {
@@ -227,6 +226,16 @@
             border-radius: 30px;
         }
 
+        .sort-btn {
+            left: 205px;
+            background: #9C27B0;
+            color: white;
+            font-size: 14px;
+            width: auto;
+            padding: 0 20px;
+            border-radius: 30px;
+        }
+
         .add-note-btn {
             position: absolute;
             bottom: 20px;
@@ -248,94 +257,82 @@
             transform: scale(1.1);
         }
 
-        /* Kanban Board Container */
+        /* Cards Container */
         .cards-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            height: 100%;
-            width: 100%;
-        }
-
-        .kanban-column {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 15px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-height: 0;
+            width: calc(100% - 40px);
+            max-height: calc(100% - 120px);
+            margin: 0 20px;
+            padding: 80px 0 40px 0;
+            gap: 5px;
+            align-items: stretch;
+            box-sizing: content-box;
         }
 
-        .kanban-column-header {
-            font-weight: bold;
-            font-size: 18px;
-            color: rgb(39, 39, 39);
-            text-align: center;
-            padding: 10px;
+        .card-wrapper {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            gap: 10px;
+            min-width: 80px;
+        }
+
+        .card-control-btn {
+            padding: 8px 16px;
+            border: none;
             border-radius: 5px;
-            margin-bottom: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.2s;
+            min-width: 80px;
         }
 
-        .kanban-column-header.high {
-            background: #FFB3BA;
+        .card-control-btn:hover {
+            opacity: 0.8;
         }
 
-        .kanban-column-header.medium {
-            background: #FFE4A3;
+        .card-control-btn.pause-btn {
+            background: #FF9800;
         }
 
-        .kanban-column-header.low {
-            background: #B4E7B4;
+        .card-control-btn.locked {
+            background: #4CAF50;
+            cursor: not-allowed;
+            color: white;
+            font-size: 20px;
         }
 
-        .kanban-column-header.none {
-            background: #AED6F1;
-        }
-
-        .kanban-column-cards {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-height: 0;
-        }
-
-        /* Work Item Card - Horizontal */
+        /* Work Item Card */
         .work-card {
             position: relative;
-            border-radius: 8px;
-            padding: 12px 15px;
+            border-radius: 15px;
+            padding: 20px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-height: 60px;
-            max-height: 80px;
-            border: 2px solid rgba(0, 0, 0, 0.1);
+            flex-direction: column;
+            justify-content: flex-end;
+            cursor: move;
+            transition: all 0.3s;
+            width: 100%;
+            flex: 1;
         }
 
         .work-card.high {
-            background: #FFB3BA;
+            background: #f44336;
+            border: 4px solid #000;
         }
 
         .work-card.medium {
-            background: #FFE4A3;
+            background: #FFD700;
+            border: 4px solid #000;
         }
 
         .work-card.low {
-            background: #B4E7B4;
-        }
-
-        .work-card.none {
-            background: #AED6F1;
-        }
-
-        .work-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background: #4CAF50;
+            border: 4px solid #000;
         }
 
         .work-card.dragging {
@@ -343,27 +340,45 @@
         }
 
         .card-content {
-            flex: 1;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            overflow: hidden;
+            align-items: flex-start;
         }
 
         .card-title {
             font-weight: bold;
-            font-size: 16px;
+            font-size: 24px;
             color: #000;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+            white-space: normal;
+            transition: font-size 0.2s;
+        }
+
+        .card-title.small {
+            font-size: 16px;
+        }
+
+        .card-title.tiny {
+            font-size: 12px;
         }
 
         .card-time {
-            font-size: 14px;
-            color: #333;
-            white-space: nowrap;
+            font-size: 16px;
+            color: #000;
+            transition: font-size 0.2s;
+        }
+
+        .card-time.small {
+            font-size: 12px;
+        }
+
+        .card-time.tiny {
+            font-size: 10px;
         }
 
         /* Floating Box Overlay */
@@ -708,9 +723,10 @@
         <!-- Floating Buttons -->
         <button class="floating-btn add-btn" onclick="showAddItemDialog()">+</button>
         <button class="floating-btn save-load-btn" onclick="showSaveLoadDialog()">Save/Load</button>
+        <button class="floating-btn sort-btn" onclick="sortWorkItems()">Sort</button>
 
         <!-- Version Display -->
-        <div class="version">v2.0</div>
+        <div class="version">v1.27</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -736,12 +752,29 @@
         <div class="floating-box">
             <h2>Add Work Item</h2>
             <div class="form-group">
-                <label for="workItemTitle">Title</label>
-                <input type="text" id="workItemTitle" placeholder="Enter work item title">
+                <label for="workItemTitle">Work Item</label>
+                <input type="text" id="workItemTitle" placeholder="Enter work item name">
             </div>
             <div class="form-group">
-                <label for="workItemDescription">Description</label>
-                <textarea id="workItemDescription" placeholder="Enter work item description..." style="width: 100%; height: 100px; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px; resize: vertical;"></textarea>
+                <label>Time Required</label>
+                <div class="time-inputs">
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: normal;">Hours</label>
+                        <input type="number" id="workItemHours" placeholder="Hours" min="0" value="0">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: normal;">Minutes</label>
+                        <input type="number" id="workItemMinutes" placeholder="Minutes" min="0" max="59" value="0">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="workItemPriority">Priority</label>
+                <select id="workItemPriority">
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
             </div>
             <div class="btn-group">
                 <button class="btn btn-primary" onclick="addWorkItem()">Add</button>
@@ -750,28 +783,32 @@
         </div>
     </div>
 
-    <!-- Work Item Detail Overlay -->
-    <div class="overlay" id="workItemDetailOverlay">
-        <div class="floating-box" style="max-width: 500px;">
-            <h2 id="detailTitle">Work Item Details</h2>
+    <!-- Add Time Overlay -->
+    <div class="overlay" id="addTimeOverlay">
+        <div class="floating-box">
+            <h2>Add More Time</h2>
             <div class="form-group">
-                <label>Title</label>
-                <p id="detailTitleText" style="margin: 5px 0; font-size: 16px; font-weight: bold;"></p>
-            </div>
-            <div class="form-group">
-                <label>Description</label>
-                <p id="detailDescription" style="margin: 5px 0; font-size: 14px; color: #555; white-space: pre-wrap;"></p>
-            </div>
-            <div class="form-group">
-                <label>Total Time Logged</label>
-                <p id="detailTimeLogged" style="margin: 5px 0; font-size: 16px; font-weight: bold; color: #4CAF50;"></p>
-            </div>
-            <div class="form-group">
-                <label>Last 7 Days</label>
-                <div id="detailDailyBreakdown" style="margin: 10px 0; max-height: 250px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 10px; background: #f9f9f9;"></div>
+                <label>Additional Time</label>
+                <div class="time-inputs">
+                    <input type="number" id="addTimeHours" placeholder="Hours" min="0" value="0">
+                    <input type="number" id="addTimeMinutes" placeholder="Minutes" min="0" max="59" value="0">
+                </div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-secondary" onclick="closeWorkItemDetail()">Close</button>
+                <button class="btn btn-primary" onclick="addMoreTime()">Add</button>
+                <button class="btn btn-secondary" onclick="closeAddTimeDialog()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completion Overlay -->
+    <div class="overlay" id="completionOverlay">
+        <div class="floating-box">
+            <h2>Timer Complete!</h2>
+            <p style="margin: 20px 0; text-align: center; font-size: 18px;">What would you like to do?</p>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="completeWorkItem()">Complete Item</button>
+                <button class="btn btn-info" onclick="showAddTimeFromCompletion(currentTimerForAddTime)">Add More Time</button>
             </div>
         </div>
     </div>
@@ -849,10 +886,24 @@
         </div>
     </div>
 
+    <!-- Cancel Timer Confirmation Overlay -->
+    <div class="overlay" id="cancelTimerOverlay">
+        <div class="floating-box">
+            <h2>Cancel Timer</h2>
+            <p style="margin: 20px 0; text-align: center; font-size: 16px;">What would you like to do with this timer?</p>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="closeTimerSaveProgress()">Close Timer (Save Progress)</button>
+                <button class="btn btn-danger" onclick="resetTimerCompletely()">Reset Timer</button>
+                <button class="btn btn-secondary" onclick="closeCancelTimerDialog()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let workItems = [];
         let draggedElement = null;
-        let activeTimers = {}; // Store timers by work item ID
+        let activeTimers = {}; // Store multiple timers by work item ID
+        let currentTimerForAddTime = null; // Track which timer is getting more time added
         let stickyNotes = [];
         let selectedNoteColor = '#FFD700';
         let draggedNote = null;
@@ -861,8 +912,7 @@
         let contextMenuNoteId = null;
         let contextMenuWorkItemId = null;
         let autoSaveInterval = null;
-        let draggedCardId = null; // For drag-to-timer functionality
-        let draggedFromColumn = null;
+        let cancelingTimerId = null; // Track which timer is being canceled
 
         // Load from localStorage on startup
         window.addEventListener('DOMContentLoaded', function() {
@@ -904,25 +954,37 @@
 
         function clearAddItemForm() {
             document.getElementById('workItemTitle').value = '';
-            document.getElementById('workItemDescription').value = '';
+            document.getElementById('workItemHours').value = '0';
+            document.getElementById('workItemMinutes').value = '0';
+            document.getElementById('workItemPriority').value = 'high';
         }
 
         // Add Work Item
         function addWorkItem() {
             const title = document.getElementById('workItemTitle').value.trim();
-            const description = document.getElementById('workItemDescription').value.trim();
+            const hours = parseInt(document.getElementById('workItemHours').value) || 0;
+            const minutes = parseInt(document.getElementById('workItemMinutes').value) || 0;
+            const priority = document.getElementById('workItemPriority').value;
 
             if (!title) {
-                alert('Please enter a work item title');
+                alert('Please enter a work item name');
                 return;
             }
 
+            if (hours === 0 && minutes === 0) {
+                alert('Please enter a time duration');
+                return;
+            }
+
+            const totalMinutes = hours * 60 + minutes;
             const workItem = {
                 id: Date.now(),
                 title: title,
-                description: description,
-                priority: 'none', // All new items start in "No Priority"
-                timeRecordings: [] // Array of {startTime, endTime, duration}
+                totalMinutes: totalMinutes,
+                originalMinutes: totalMinutes, // Store original time allocation
+                priority: priority,
+                locked: false,
+                accumulatedMinutes: 0 // Track time already used
             };
 
             workItems.push(workItem);
@@ -932,231 +994,215 @@
             closeAddItemDialog();
         }
 
-        // Render Work Items in Kanban Board
+        // Sort Work Items by time (largest to smallest)
+        function sortWorkItems() {
+            workItems.sort((a, b) => b.totalMinutes - a.totalMinutes);
+            saveToLocalStorage();
+            renderWorkItems();
+        }
+
+        // Render Work Items
         function renderWorkItems() {
             const container = document.getElementById('cardsContainer');
             container.innerHTML = '';
 
-            // Create 4 columns
-            const columns = {
-                high: { title: 'High', items: [] },
-                medium: { title: 'Medium', items: [] },
-                low: { title: 'Low', items: [] },
-                none: { title: 'No Priority', items: [] }
-            };
+            if (workItems.length === 0) return;
 
-            // Sort items into columns
-            workItems.forEach(item => {
-                const priority = item.priority || 'none';
-                if (columns[priority]) {
-                    columns[priority].items.push(item);
+            const totalMinutes = workItems.reduce((sum, item) => sum + item.totalMinutes, 0);
+
+            workItems.forEach((item, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-wrapper';
+
+                // Use flexbox grow based on time proportion
+                wrapper.style.flexGrow = item.totalMinutes;
+                wrapper.style.flexShrink = 1;
+                wrapper.style.flexBasis = '0';
+
+                // Determine button state
+                let buttonClass = '';
+                let buttonText = 'Start';
+                let buttonAction = `startTimer(${index})`;
+
+                // Check if there's a paused timer for this item
+                let displayTime = '';
+                const hours = Math.floor(item.totalMinutes / 60);
+                const minutes = item.totalMinutes % 60;
+                let timeText = `${hours}h ${minutes}m`;
+
+                // Add accumulated time if it exists
+                const accumulatedMinutes = item.accumulatedMinutes || 0;
+                if (accumulatedMinutes > 0) {
+                    const accHours = Math.floor(accumulatedMinutes / 60);
+                    const accMins = accumulatedMinutes % 60;
+                    timeText += ` (${accHours}h ${accMins}m)`;
                 }
+
+                if (item.locked) {
+                    buttonClass = 'locked';
+                    buttonText = '✓';
+                    buttonAction = '';
+                    displayTime = timeText;
+                } else if (activeTimers[item.id]) {
+                    const timer = activeTimers[item.id];
+                    if (timer.paused) {
+                        buttonClass = '';
+                        buttonText = 'Resume';
+                        buttonAction = `resumeTimer(${item.id})`;
+
+                        // Calculate time left and time recorded
+                        const remainingHours = Math.floor(timer.remainingSeconds / 3600);
+                        const remainingMinutes = Math.floor((timer.remainingSeconds % 3600) / 60);
+                        const recordedSeconds = timer.totalSeconds - timer.remainingSeconds;
+                        const recordedHours = Math.floor(recordedSeconds / 3600);
+                        const recordedMinutes = Math.floor((recordedSeconds % 3600) / 60);
+
+                        displayTime = `${remainingHours}h ${remainingMinutes}m (${recordedHours}h ${recordedMinutes}m)`;
+                    } else {
+                        buttonClass = 'pause-btn';
+                        buttonText = 'Pause';
+                        buttonAction = `pauseTimerAndClose(${item.id})`;
+                        displayTime = timeText;
+                    }
+                } else {
+                    displayTime = timeText;
+                }
+
+                wrapper.innerHTML = `
+                    <button class="card-control-btn ${buttonClass}"
+                            onclick="${buttonAction}">
+                        ${buttonText}
+                    </button>
+                `;
+
+                const card = document.createElement('div');
+                card.className = `work-card ${item.priority}`;
+                card.draggable = true;
+                card.dataset.index = index;
+
+                // Format title: max 40 chars, wrap at word boundary near 20 chars
+                let formattedTitle = item.title.substring(0, 40);
+                if (formattedTitle.length > 20) {
+                    // Find the last space before or at position 20
+                    let breakPoint = formattedTitle.lastIndexOf(' ', 20);
+                    // If no space found or it's too early, break at 20
+                    if (breakPoint === -1 || breakPoint < 10) {
+                        breakPoint = 20;
+                    }
+                    formattedTitle = formattedTitle.substring(0, breakPoint).trim() + '<br>' + formattedTitle.substring(breakPoint).trim();
+                }
+
+                card.innerHTML = `
+                    <div class="card-content">
+                        <div class="card-title">${formattedTitle}</div>
+                        <div class="card-time">${displayTime}</div>
+                    </div>
+                `;
+
+                // Drag events
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragover', handleDragOver);
+                card.addEventListener('drop', handleDrop);
+                card.addEventListener('dragend', handleDragEnd);
+                card.addEventListener('contextmenu', (e) => showWorkItemContextMenu(e, item.id));
+
+                wrapper.appendChild(card);
+                container.appendChild(wrapper);
             });
 
-            // Render each column
-            Object.keys(columns).forEach(priority => {
-                const column = columns[priority];
-                const columnDiv = document.createElement('div');
-                columnDiv.className = 'kanban-column';
-                columnDiv.dataset.priority = priority;
+            // Apply uniform font sizing after all cards are rendered
+            setTimeout(() => {
+                const allCards = container.querySelectorAll('.work-card');
+                if (allCards.length === 0) return;
 
-                // Column header
-                const header = document.createElement('div');
-                header.className = `kanban-column-header ${priority}`;
-                header.textContent = column.title;
-                columnDiv.appendChild(header);
+                // Calculate average card width
+                let totalWidth = 0;
+                let hasWrappedText = false;
 
-                // Column cards container
-                const cardsContainer = document.createElement('div');
-                cardsContainer.className = 'kanban-column-cards';
-                cardsContainer.dataset.priority = priority;
-
-                // Add drop event listeners to column
-                cardsContainer.addEventListener('dragover', handleColumnDragOver);
-                cardsContainer.addEventListener('drop', handleColumnDrop);
-
-                // Render cards in this column
-                column.items.forEach(item => {
-                    const card = createWorkCard(item);
-                    cardsContainer.appendChild(card);
+                allCards.forEach((card, idx) => {
+                    totalWidth += card.offsetWidth;
+                    const item = workItems[idx];
+                    if (item && (item.title.length > 20 || item.title.includes(' '))) {
+                        const titleEl = card.querySelector('.card-title');
+                        if (titleEl && titleEl.innerHTML.includes('<br>')) {
+                            hasWrappedText = true;
+                        }
+                    }
                 });
 
-                columnDiv.appendChild(cardsContainer);
-                container.appendChild(columnDiv);
-            });
-        }
+                const avgWidth = totalWidth / allCards.length;
 
-        // Create a work card element
-        function createWorkCard(item) {
-            const card = document.createElement('div');
-            card.className = `work-card ${item.priority}`;
-            card.draggable = true;
-            card.dataset.itemId = item.id;
-
-            // Calculate total time logged
-            const totalSeconds = item.timeRecordings.reduce((sum, rec) => sum + (rec.duration || 0), 0);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const timeText = totalSeconds > 0 ? `${hours}h ${minutes}m` : 'No time logged';
-
-            card.innerHTML = `
-                <div class="card-content">
-                    <div class="card-title">${item.title}</div>
-                    <div class="card-time">${timeText}</div>
-                </div>
-            `;
-
-            // Click to show details
-            card.addEventListener('click', () => showWorkItemDetail(item.id));
-
-            // Drag events
-            card.addEventListener('dragstart', handleCardDragStart);
-            card.addEventListener('dragend', handleCardDragEnd);
-            card.addEventListener('contextmenu', (e) => showWorkItemContextMenu(e, item.id));
-
-            return card;
-        }
-
-        // Work Item Detail Dialog
-        function showWorkItemDetail(itemId) {
-            const item = workItems.find(i => i.id === itemId);
-            if (!item) return;
-
-            document.getElementById('detailTitleText').textContent = item.title;
-            document.getElementById('detailDescription').textContent = item.description || 'No description';
-
-            // Calculate total time logged
-            const totalSeconds = item.timeRecordings.reduce((sum, rec) => sum + (rec.duration || 0), 0);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            const timeText = `${hours}h ${minutes}m ${seconds}s`;
-
-            document.getElementById('detailTimeLogged').textContent = timeText;
-
-            // Calculate and display last 7 days of time tracking
-            const last7Days = getLast7DaysTimeBreakdown(item.timeRecordings);
-            const dailyBreakdownEl = document.getElementById('detailDailyBreakdown');
-            dailyBreakdownEl.innerHTML = last7Days.map(day => {
-                const dayHours = Math.floor(day.seconds / 3600);
-                const dayMinutes = Math.floor((day.seconds % 3600) / 60);
-                const timeDisplay = day.seconds > 0 ? `${dayHours}h ${dayMinutes}m` : '0h 0m';
-                return `<div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
-                    <span>${day.date}</span>
-                    <span style="font-weight: bold;">${timeDisplay}</span>
-                </div>`;
-            }).join('');
-
-            document.getElementById('workItemDetailOverlay').classList.add('active');
-        }
-
-        // Get time breakdown for last 7 days
-        function getLast7DaysTimeBreakdown(timeRecordings) {
-            const today = new Date();
-            const last7Days = [];
-
-            // Generate array of last 7 days (including today)
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                const dateString = date.toISOString().split('T')[0];
-                last7Days.push({
-                    date: dateString,
-                    seconds: 0
-                });
-            }
-
-            // Aggregate time recordings by date
-            timeRecordings.forEach(rec => {
-                const recDate = rec.date || new Date(rec.startTime).toISOString().split('T')[0];
-                const dayEntry = last7Days.find(d => d.date === recDate);
-                if (dayEntry) {
-                    dayEntry.seconds += rec.duration || 0;
+                // Determine size class based on average width or wrapped text
+                let sizeClass = '';
+                if (avgWidth < 60 || hasWrappedText) {
+                    sizeClass = 'tiny';
+                } else if (avgWidth < 90) {
+                    sizeClass = 'small';
                 }
-            });
 
-            return last7Days;
+                // Apply the same size class to all cards
+                if (sizeClass) {
+                    allCards.forEach(card => {
+                        const titleEl = card.querySelector('.card-title');
+                        const timeEl = card.querySelector('.card-time');
+                        if (titleEl && timeEl) {
+                            titleEl.classList.add(sizeClass);
+                            timeEl.classList.add(sizeClass);
+                        }
+                    });
+                }
+            }, 0);
         }
 
-        function closeWorkItemDetail() {
-            document.getElementById('workItemDetailOverlay').classList.remove('active');
-        }
-
-        // Kanban Drag and Drop Functions
-        function handleCardDragStart(e) {
-            draggedCardId = parseInt(this.dataset.itemId);
+        // Drag and Drop
+        function handleDragStart(e) {
+            draggedElement = this;
             this.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
+        }
 
-            // Find which column this card is in
-            const item = workItems.find(i => i.id === draggedCardId);
-            if (item) {
-                draggedFromColumn = item.priority;
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
             }
-        }
-
-        function handleCardDragEnd(e) {
-            this.classList.remove('dragging');
-            draggedCardId = null;
-            draggedFromColumn = null;
-        }
-
-        function handleColumnDragOver(e) {
-            e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
+            return false;
         }
 
-        function handleColumnDrop(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const targetPriority = this.dataset.priority;
-
-            if (draggedCardId !== null) {
-                // Moving card between columns - update priority
-                const item = workItems.find(i => i.id === draggedCardId);
-                if (item && item.priority !== targetPriority) {
-                    item.priority = targetPriority;
-                    saveToLocalStorage();
-                    renderWorkItems();
-                }
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
             }
+
+            if (draggedElement !== this) {
+                const draggedIndex = parseInt(draggedElement.dataset.index);
+                const targetIndex = parseInt(this.dataset.index);
+
+                const draggedItem = workItems[draggedIndex];
+                workItems.splice(draggedIndex, 1);
+                workItems.splice(targetIndex, 0, draggedItem);
+
+                saveToLocalStorage();
+                renderWorkItems();
+            }
+
+            return false;
         }
 
-        // Timer Sidebar - Drag to start timer
-        const timerSidebar = document.getElementById('timerSidebar');
-        timerSidebar.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'copy';
-            timerSidebar.style.background = 'rgb(140, 140, 140)'; // Visual feedback
-        });
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+        }
 
-        timerSidebar.addEventListener('dragleave', function(e) {
-            timerSidebar.style.background = 'rgb(160, 160, 160)';
-        });
+        // Timer Functions
+        function startTimer(index) {
+            const item = workItems[index];
 
-        timerSidebar.addEventListener('drop', function(e) {
-            e.preventDefault();
-            timerSidebar.style.background = 'rgb(160, 160, 160)';
-
-            if (draggedCardId !== null) {
-                const item = workItems.find(i => i.id === draggedCardId);
-                if (item && !activeTimers[item.id]) {
-                    startTimer(item.id);
-                }
-            }
-        });
-
-        // Timer Functions - Count Up
-        function startTimer(itemId) {
-            const item = workItems.find(i => i.id === itemId);
-            if (!item) return;
-
-            // Create new timer (count-up)
+            // Create new timer
             const timer = {
                 itemId: item.id,
-                startTime: Date.now(),
-                elapsedSeconds: 0,
+                index: index,
+                remainingSeconds: item.totalMinutes * 60,
+                totalSeconds: item.totalMinutes * 60,
                 paused: false,
                 interval: null
             };
@@ -1166,20 +1212,27 @@
             // Start the timer interval
             timer.interval = setInterval(() => updateTimer(item.id), 1000);
 
+            renderWorkItems();
             renderActiveTimers();
-            saveToLocalStorage();
+            updateSidebarVisibility();
         }
 
         function updateTimer(itemId) {
             const timer = activeTimers[itemId];
             if (!timer || timer.paused) return;
 
-            timer.elapsedSeconds++;
-            renderActiveTimers();
-
-            // Auto-save timer progress every 60 seconds
-            if (timer.elapsedSeconds % 60 === 0) {
-                saveToLocalStorage();
+            if (timer.remainingSeconds > 0) {
+                timer.remainingSeconds--;
+                renderActiveTimers();
+                // Auto-save timer progress every 10 seconds
+                if (timer.remainingSeconds % 10 === 0) {
+                    saveToLocalStorage();
+                }
+            } else {
+                // Timer completed
+                clearInterval(timer.interval);
+                playAlarm();
+                showCompletionDialog(itemId);
             }
         }
 
@@ -1187,10 +1240,18 @@
             const timer = activeTimers[itemId];
             if (timer) {
                 timer.paused = true;
-                clearInterval(timer.interval);
-                timer.interval = null;
+                renderWorkItems();
                 renderActiveTimers();
+            }
+        }
+
+        function pauseTimerAndClose(itemId) {
+            const timer = activeTimers[itemId];
+            if (timer) {
+                timer.paused = true;
                 saveToLocalStorage();
+                renderWorkItems();
+                renderActiveTimers();
             }
         }
 
@@ -1198,40 +1259,126 @@
             const timer = activeTimers[itemId];
             if (timer) {
                 timer.paused = false;
-                timer.startTime = Date.now() - (timer.elapsedSeconds * 1000);
-                timer.interval = setInterval(() => updateTimer(itemId), 1000);
+                renderWorkItems();
                 renderActiveTimers();
-                saveToLocalStorage();
             }
         }
 
-        function stopTimer(itemId) {
-            const timer = activeTimers[itemId];
-            if (!timer) return;
+        function playTimer(itemId) {
+            resumeTimer(itemId);
+        }
 
-            // Save time recording to work item with date
-            const item = workItems.find(i => i.id === itemId);
-            if (item) {
-                const now = new Date();
-                const dateString = now.toISOString().split('T')[0]; // YYYY-MM-DD format
-                const recording = {
-                    startTime: timer.startTime,
-                    endTime: Date.now(),
-                    duration: timer.elapsedSeconds,
-                    date: dateString
-                };
-                item.timeRecordings.push(recording);
-            }
+        function cancelTimer(itemId) {
+            cancelingTimerId = itemId;
+            document.getElementById('cancelTimerOverlay').classList.add('active');
+        }
 
-            // Clear the timer
-            if (timer.interval) {
+        function closeCancelTimerDialog() {
+            document.getElementById('cancelTimerOverlay').classList.remove('active');
+            cancelingTimerId = null;
+        }
+
+        function closeTimerSaveProgress() {
+            if (cancelingTimerId === null) return;
+
+            const timer = activeTimers[cancelingTimerId];
+            if (timer) {
+                // Calculate time used in this session
+                const timeUsedSeconds = timer.totalSeconds - timer.remainingSeconds;
+                const timeUsedMinutes = Math.ceil(timeUsedSeconds / 60);
+
+                // Update the work item
+                const item = workItems[timer.index];
+                if (item) {
+                    // Add the time used to accumulated time
+                    item.accumulatedMinutes = (item.accumulatedMinutes || 0) + timeUsedMinutes;
+
+                    // Update total time to be remaining time
+                    const remainingMinutes = Math.ceil(timer.remainingSeconds / 60);
+                    item.totalMinutes = remainingMinutes;
+                }
+
+                // Clear the timer
                 clearInterval(timer.interval);
+                delete activeTimers[cancelingTimerId];
+                saveToLocalStorage();
+                renderWorkItems();
+                renderActiveTimers();
+                updateSidebarVisibility();
             }
-            delete activeTimers[itemId];
 
-            saveToLocalStorage();
-            renderWorkItems();
-            renderActiveTimers();
+            closeCancelTimerDialog();
+        }
+
+        function resetTimerCompletely() {
+            if (cancelingTimerId === null) return;
+
+            const timer = activeTimers[cancelingTimerId];
+            if (timer) {
+                // Restore work item to original time and clear accumulated time
+                const item = workItems[timer.index];
+                if (item) {
+                    item.totalMinutes = item.originalMinutes || item.totalMinutes;
+                    item.accumulatedMinutes = 0;
+                }
+
+                // Clear the timer
+                clearInterval(timer.interval);
+                delete activeTimers[cancelingTimerId];
+                saveToLocalStorage();
+                renderWorkItems();
+                renderActiveTimers();
+                updateSidebarVisibility();
+            }
+
+            closeCancelTimerDialog();
+        }
+
+        function playAlarm() {
+            // Always use Web Audio API for better Safari compatibility
+            playBeep();
+        }
+
+        function playBeep() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                // Create a pleasant alarm sound with multiple beeps
+                oscillator.frequency.value = 880; // A5 note
+                oscillator.type = 'sine';
+
+                // First beep
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+                // Second beep
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + 0.3);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                // Third beep
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + 0.6);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.8);
+            } catch (e) {
+                console.error('Could not play beep:', e);
+                // Final fallback - try the audio element
+                try {
+                    const alarm = document.getElementById('alarmSound');
+                    alarm.currentTime = 0;
+                    alarm.play().catch(() => {
+                        alert('Timer Complete!');
+                    });
+                } catch (err) {
+                    alert('Timer Complete!');
+                }
+            }
         }
 
         // Render Active Timers in Sidebar
@@ -1241,17 +1388,19 @@
 
             Object.keys(activeTimers).forEach(itemId => {
                 const timer = activeTimers[itemId];
-                const item = workItems.find(i => i.id == itemId);
+                const item = workItems[timer.index];
 
                 if (!item) {
                     delete activeTimers[itemId];
                     return;
                 }
 
-                const hours = Math.floor(timer.elapsedSeconds / 3600);
-                const minutes = Math.floor((timer.elapsedSeconds % 3600) / 60);
-                const seconds = timer.elapsedSeconds % 60;
+                const hours = Math.floor(timer.remainingSeconds / 3600);
+                const minutes = Math.floor((timer.remainingSeconds % 3600) / 60);
+                const seconds = timer.remainingSeconds % 60;
                 const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                const progress = (timer.remainingSeconds / timer.totalSeconds) * 100;
 
                 // Add live indicator if timer is running
                 const liveIndicator = !timer.paused ? '<span class="live-indicator"></span>' : '';
@@ -1261,18 +1410,91 @@
                 timerCard.innerHTML = `
                     <h4>${item.title}${liveIndicator}</h4>
                     <div class="timer-clock-small">${timeString}</div>
+                    <div class="progress-bar-small">
+                        <div class="progress-fill-small" style="width: ${progress}%"></div>
+                    </div>
                     <div class="timer-controls">
                         ${timer.paused ?
-                            `<button class="timer-btn play" onclick="resumeTimer(${itemId})">Resume</button>` :
+                            `<button class="timer-btn play" onclick="playTimer(${itemId})">Play</button>` :
                             `<button class="timer-btn pause" onclick="pauseTimer(${itemId})">Pause</button>`
                         }
-                        <button class="timer-btn cancel" onclick="stopTimer(${itemId})">Stop</button>
+                        <button class="timer-btn cancel" onclick="cancelTimer(${itemId})">Cancel</button>
                     </div>
                 `;
                 container.appendChild(timerCard);
             });
         }
 
+        function updateSidebarVisibility() {
+            // Sidebar is now always visible, no need to update
+        }
+
+        // Add Time Functions
+        function showAddTimeDialog(itemId) {
+            currentTimerForAddTime = itemId;
+            document.getElementById('addTimeOverlay').classList.add('active');
+        }
+
+        function closeAddTimeDialog() {
+            document.getElementById('addTimeOverlay').classList.remove('active');
+            document.getElementById('addTimeHours').value = '0';
+            document.getElementById('addTimeMinutes').value = '0';
+            currentTimerForAddTime = null;
+        }
+
+        function addMoreTime() {
+            if (!currentTimerForAddTime) return;
+
+            const hours = parseInt(document.getElementById('addTimeHours').value) || 0;
+            const minutes = parseInt(document.getElementById('addTimeMinutes').value) || 0;
+            const additionalSeconds = (hours * 60 + minutes) * 60;
+
+            if (additionalSeconds === 0) {
+                alert('Please enter a time duration');
+                return;
+            }
+
+            const timer = activeTimers[currentTimerForAddTime];
+            if (timer) {
+                timer.remainingSeconds += additionalSeconds;
+                timer.totalSeconds += additionalSeconds;
+                workItems[timer.index].totalMinutes += (hours * 60 + minutes);
+
+                saveToLocalStorage();
+                renderWorkItems();
+                renderActiveTimers();
+            }
+
+            closeAddTimeDialog();
+        }
+
+        function showAddTimeFromCompletion(itemId) {
+            document.getElementById('completionOverlay').classList.remove('active');
+            showAddTimeDialog(itemId);
+        }
+
+        // Completion Functions
+        function showCompletionDialog(itemId) {
+            currentTimerForAddTime = itemId;
+            document.getElementById('completionOverlay').classList.add('active');
+        }
+
+        function completeWorkItem() {
+            if (!currentTimerForAddTime) return;
+
+            const timer = activeTimers[currentTimerForAddTime];
+            if (timer) {
+                workItems[timer.index].locked = true;
+                delete activeTimers[currentTimerForAddTime];
+                saveToLocalStorage();
+                renderWorkItems();
+                renderActiveTimers();
+                updateSidebarVisibility();
+            }
+
+            document.getElementById('completionOverlay').classList.remove('active');
+            currentTimerForAddTime = null;
+        }
 
         // Notes Functions
         function showAddNoteDialog() {
@@ -1513,11 +1735,15 @@
                     const imported = JSON.parse(e.target.result);
                     // Handle old format (just array) or new format (object)
                     if (Array.isArray(imported)) {
-                        workItems = migrateOldWorkItems(imported);
+                        workItems = imported;
                     } else {
                         workItems = imported.workItems || [];
-                        // Migrate old format work items to new format
-                        workItems = workItems.map(item => migrateWorkItem(item));
+                        // Ensure all work items have accumulatedMinutes and originalMinutes properties
+                        workItems = workItems.map(item => ({
+                            ...item,
+                            accumulatedMinutes: item.accumulatedMinutes || 0,
+                            originalMinutes: item.originalMinutes || item.totalMinutes
+                        }));
 
                         stickyNotes = imported.stickyNotes || [];
                         // Restore active timers if present
@@ -1536,35 +1762,6 @@
             };
             reader.readAsText(file);
             event.target.value = '';
-        }
-
-        // Migrate old work item format to new format
-        function migrateWorkItem(item) {
-            // If already in new format with timeRecordings
-            if (item.timeRecordings) {
-                // Ensure all recordings have a date field
-                item.timeRecordings = item.timeRecordings.map(rec => {
-                    if (!rec.date && rec.startTime) {
-                        // Add date based on startTime
-                        rec.date = new Date(rec.startTime).toISOString().split('T')[0];
-                    }
-                    return rec;
-                });
-                return item;
-            }
-
-            // Migrate from old format
-            return {
-                id: item.id,
-                title: item.title,
-                description: '', // Old format didn't have description
-                priority: item.priority || 'none',
-                timeRecordings: [] // Old format tracked totalMinutes, not recordings
-            };
-        }
-
-        function migrateOldWorkItems(items) {
-            return items.map(item => migrateWorkItem(item));
         }
 
         function clearWork() {
@@ -1611,8 +1808,9 @@
                 const timer = activeTimers[itemId];
                 serializedTimers[itemId] = {
                     itemId: timer.itemId,
-                    startTime: timer.startTime,
-                    elapsedSeconds: timer.elapsedSeconds,
+                    index: timer.index,
+                    remainingSeconds: timer.remainingSeconds,
+                    totalSeconds: timer.totalSeconds,
                     paused: timer.paused,
                     timestamp: Date.now()
                 };
@@ -1630,8 +1828,9 @@
                 if (item) {
                     const timer = {
                         itemId: saved.itemId,
-                        startTime: saved.startTime,
-                        elapsedSeconds: saved.elapsedSeconds || 0,
+                        index: workItems.indexOf(item),
+                        remainingSeconds: saved.remainingSeconds,
+                        totalSeconds: saved.totalSeconds,
                         paused: saved.paused,
                         interval: null
                     };
@@ -1657,12 +1856,16 @@
                     const data = JSON.parse(saved);
                     // Handle old format (just array) or new format (object)
                     if (Array.isArray(data)) {
-                        workItems = migrateOldWorkItems(data);
+                        workItems = data;
                         stickyNotes = [];
                     } else {
                         workItems = data.workItems || [];
-                        // Migrate old format work items to new format
-                        workItems = workItems.map(item => migrateWorkItem(item));
+                        // Ensure all work items have accumulatedMinutes and originalMinutes properties
+                        workItems = workItems.map(item => ({
+                            ...item,
+                            accumulatedMinutes: item.accumulatedMinutes || 0,
+                            originalMinutes: item.originalMinutes || item.totalMinutes
+                        }));
 
                         stickyNotes = data.stickyNotes || [];
                         // Ensure all notes have collapsed and title properties
@@ -1709,20 +1912,15 @@
 
         function deleteWorkItemFromContext() {
             if (contextMenuWorkItemId !== null) {
-                // Stop any active timer for this item
+                // Cancel any active timer for this item
                 if (activeTimers[contextMenuWorkItemId]) {
-                    const timer = activeTimers[contextMenuWorkItemId];
-                    if (timer.interval) {
-                        clearInterval(timer.interval);
-                    }
-                    delete activeTimers[contextMenuWorkItemId];
+                    cancelTimer(contextMenuWorkItemId);
                 }
 
                 // Remove the work item
                 workItems = workItems.filter(item => item.id !== contextMenuWorkItemId);
                 saveToLocalStorage();
                 renderWorkItems();
-                renderActiveTimers();
                 closeWorkItemContextMenu();
             }
         }

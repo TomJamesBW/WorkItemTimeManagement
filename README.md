@@ -1,31 +1,30 @@
 # Work Item Time Management
 
-A single-page time management application for tracking work items with visual time allocation, multiple simultaneous timers, and sticky notes.
+A single-page time management application for tracking work items with a kanban board interface, count-up time tracking, date-based time logging, and sticky notes.
 
 ## Features
 
 ### Work Items
-- **Visual Time Cards**: Work items displayed as vertical bars with width proportional to allocated time
+- **Kanban Board Layout**: Work items organized in 4 columns (High, Medium, Low, No Priority)
 - **Priority Colors**:
-  - 🔴 High Priority (Red)
-  - 🟡 Medium Priority (Gold)
-  - 🟢 Low Priority (Green)
-- **Multiple Timers**: Run multiple timers simultaneously for different work items
-- **Timer Controls**: Start, Pause, Resume, and Cancel functionality
-- **Completion Tracking**: Lock completed items with a green checkmark
-- **Drag & Drop**: Reorder work items by dragging
+  - 🔴 High Priority (Red/Pink pastel)
+  - 🟡 Medium Priority (Gold/Yellow pastel)
+  - 🟢 Low Priority (Green pastel)
+  - 🔵 No Priority (Blue pastel)
+- **Drag & Drop**: Move work items between priority columns
+- **Time Tracking**: Count-up timers track actual time spent on tasks
+- **Date-based Logging**: All time recordings include date stamps
+- **Work Item Details**: Click any card to view title, description, total logged time, and last 7 days breakdown
 - **Context Menu**: Right-click to delete work items
-- **Sort Function**: Sort button arranges items from largest time to smallest (left to right)
-- **Dynamic Font Sizing**: Fonts automatically shrink for slim cards or wrapped text
+- **Description Field**: Each work item includes an optional description
 
 ### Timer Sidebar
 - **Persistent Sidebar**: Always-visible timer sidebar (350px width)
-- **Real-time Countdown**: Live countdown with HH:MM:SS display
-- **Progress Bar**: Visual progress indicator for each active timer
+- **Count-Up Timers**: Track elapsed time with HH:MM:SS display
+- **Drag-to-Start**: Drag work items to timer sidebar to start tracking time
 - **Live Indicator**: Pulsing red dot shows when timer is actively running
-- **Individual Controls**: Play/Pause/Cancel buttons for each timer
-- **Add Time**: Option to add additional time when timer completes
-- **Audio Alert**: Triple-beep alarm sound using Web Audio API (Safari compatible)
+- **Individual Controls**: Play/Pause/Stop buttons for each timer
+- **Time Recording**: Stopping a timer saves the recording with date stamp to the work item
 - **Auto-save**: Timer progress saved every 60 seconds and persists across page refreshes
 - **Restore on Refresh**: Active timers automatically resume after page reload
 
@@ -48,9 +47,9 @@ A single-page time management application for tracking work items with visual ti
 
 ### Technology Stack
 - **Pure HTML5**: Single-file application
-- **CSS3**: Flexbox layout, transforms, transitions
+- **CSS3**: Grid layout (kanban board), flexbox, transitions
 - **Vanilla JavaScript**: No framework dependencies
-- **Web Audio API**: Cross-browser audio support
+- **Drag and Drop API**: Native HTML5 drag and drop
 - **LocalStorage API**: Client-side data persistence
 
 ### Browser Compatibility
@@ -66,9 +65,48 @@ A single-page time management application for tracking work items with visual ti
 
 ## Version History
 
-### v1.27 (Current)
+### v2.0 (Current) - Major Redesign
+**Breaking Changes:**
+- Complete redesign from horizontal scrolling cards to 4-column kanban board
+- Changed from countdown timers to count-up time tracking
+- Removed time allocation input - work items now track actual time spent
+- Removed locked/completed state tracking
+
+**New Features:**
+- **Kanban Board**: 4 columns (High, Medium, Low, No Priority) with vertical scrolling
+- **Count-Up Timers**: Track elapsed time instead of counting down
+- **Drag-to-Timer**: Drag work items to timer sidebar to start tracking
+- **Date-based Time Logging**: All time recordings include date stamps (YYYY-MM-DD format)
+- **Work Item Details Dialog**: Click any card to view:
+  - Title and description
+  - Total time logged across all sessions
+  - Last 7 days breakdown with daily time totals
+- **Description Field**: Work items now include an optional description field
+- **Time Recordings Array**: Each work item stores array of time recordings with startTime, endTime, duration, and date
+
+**Layout Changes:**
+- Work items section: 60% height with vertical scrolling
+- Notes section: 40% height with permanent scroll
+- Removed Sort button (no longer needed with kanban columns)
+- Increased top padding to 90px for better button spacing
+
+**Data Structure Changes:**
+- NEW: `{id, title, description, priority, timeRecordings: [{startTime, endTime, duration, date}]}`
+- REMOVED: totalMinutes, originalMinutes, accumulatedMinutes, locked fields
+- Added 'none' as default priority option
+- Full backward compatibility with v1.x data (automatic migration)
+
+**Technical Improvements:**
+- CSS Grid layout for kanban columns
+- Pastel color scheme for priority columns
+- Horizontal card layout (min 60px, max 80px height)
+- Migration functions ensure old data imports correctly
+
+---
+
+### v1.27
 **Bug Fixes:**
-- Increased Sort button spacing from left: 200px to 205px for better separation from Save/Load button
+- Increased Sort button spacing from left: 200px to 230px for better separation from Save/Load button
 - Disabled resize handle on collapsed notes (resize: none when collapsed)
 
 **Changes:**
@@ -448,29 +486,32 @@ A single-page time management application for tracking work items with visual ti
 
 ## Data Structure
 
-### Work Items
+### Work Items (v2.0)
 ```javascript
 {
   id: timestamp,
   title: string,
-  totalMinutes: number,
-  originalMinutes: number, // Original time allocation for reset functionality
-  priority: 'high' | 'medium' | 'low',
-  locked: boolean,
-  accumulatedMinutes: number // Time already used from this work item
+  description: string, // Optional description field
+  priority: 'high' | 'medium' | 'low' | 'none', // Default: 'none'
+  timeRecordings: [ // Array of all time tracking sessions
+    {
+      startTime: timestamp,
+      endTime: timestamp,
+      duration: seconds,
+      date: 'YYYY-MM-DD' // ISO date string
+    }
+  ]
 }
 ```
 
-### Active Timers
+### Active Timers (v2.0)
 ```javascript
 {
   itemId: number,
-  index: number,
-  remainingSeconds: number,
-  totalSeconds: number,
+  elapsedSeconds: number, // Count-up instead of countdown
   paused: boolean,
-  interval: setInterval reference,
-  timestamp: number (for serialization)
+  startTime: timestamp, // When timer was started
+  interval: setInterval reference
 }
 ```
 
@@ -493,22 +534,29 @@ A single-page time management application for tracking work items with visual ti
 
 ### Adding a Work Item
 1. Click the green **+** button
-2. Enter work item name
-3. Set time required (hours and minutes)
-4. Select priority level
-5. Click **Add**
+2. Enter work item title (required)
+3. Enter description (optional)
+4. Click **Add** (item appears in "No Priority" column by default)
 
-### Starting a Timer
-1. Click **Start** button on work item card
-2. Timer appears in right sidebar
-3. Use Play/Pause/Cancel buttons to control
+### Organizing Work Items
+1. **Drag work items** between priority columns (High, Medium, Low, No Priority)
+2. Items are displayed as horizontal cards within their priority column
+3. Each column scrolls independently
 
-### Completing Work
-When timer finishes:
-- Audio alarm plays (triple beep)
-- Dialog offers options:
-  - **Complete Item**: Locks item with green ✓
-  - **Add More Time**: Extend the timer
+### Tracking Time
+1. **Drag work item** to the timer sidebar to start tracking time
+2. Timer counts up from 00:00:00 showing elapsed time
+3. Use **Play/Pause** buttons to pause/resume timer
+4. Click **Stop** button to save the time recording
+5. Time recording is automatically saved with current date
+
+### Viewing Work Item Details
+1. **Click any work item card** to open detail dialog
+2. Dialog shows:
+   - Full title and description
+   - Total time logged across all sessions
+   - **Last 7 days breakdown** with date and daily time totals
+3. Click **Close** to dismiss dialog
 
 ### Managing Notes
 1. Click yellow **+** button in notes section
@@ -525,12 +573,15 @@ When timer finishes:
 - **Clear Work**: Remove all work items, notes, and timers (with confirmation dialog)
 - Auto-save to localStorage every 60 seconds for active timers
 - Timers automatically restore on page refresh
+- Full backward compatibility with v1.x JSON exports (automatic migration)
 
 ## Keyboard Shortcuts
 - **Right-click** on work item: Delete menu
 - **Right-click** on note: Delete menu
-- **Drag** work item card: Reorder items
+- **Drag** work item card: Move between priority columns
+- **Drag** work item to sidebar: Start timer
 - **Drag** note: Reposition in notes area
+- **Click** work item card: View details and time breakdown
 
 ## Known Limitations
 - Maximum of one timer per work item at a time
@@ -538,19 +589,29 @@ When timer finishes:
 - No undo functionality for deletions
 - No search or filter functionality
 - Timer accuracy depends on tab/browser activity (timers may drift if tab is inactive)
+- Time breakdown shows last 7 days only (older recordings still stored but not displayed)
 
 ## Future Enhancements
 - Work item categories/tags
 - Search and filter capabilities
 - Undo/redo functionality
-- Keyboard shortcuts
-- Export notes separately
+- Extended time breakdown reports (monthly, yearly)
+- Export time recordings to CSV
+- Statistics dashboard
 - Multiple timer instances per item
-- Statistics and reporting
 - Dark mode option
+- Work item archiving
 
 ## License
 This is a single-page application created for personal time management. Feel free to use and modify as needed.
 
 ## Support
-For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.27).
+For issues or feature requests, please refer to the version history and ensure you're using the latest version (v2.0).
+
+## Migration from v1.x to v2.0
+If you have existing v1.x data:
+- All v1.x JSON exports are automatically migrated when imported
+- Old work items with time allocations are converted to new format with empty timeRecordings array
+- Priority levels are preserved (high, medium, low)
+- Notes are fully compatible and require no migration
+- Active timers from v1.x will not restore (only new v2.0 timers persist)
