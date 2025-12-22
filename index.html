@@ -686,7 +686,7 @@
         <button class="floating-btn save-load-btn" onclick="showSaveLoadDialog()">Save/Load</button>
 
         <!-- Version Display -->
-        <div class="version">v1.22</div>
+        <div class="version">v1.23</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -846,6 +846,19 @@
         </div>
     </div>
 
+    <!-- Cancel Timer Confirmation Overlay -->
+    <div class="overlay" id="cancelTimerOverlay">
+        <div class="floating-box">
+            <h2>Cancel Timer</h2>
+            <p style="margin: 20px 0; text-align: center; font-size: 16px;">What would you like to do with this timer?</p>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="closeTimerSaveProgress()">Close Timer (Save Progress)</button>
+                <button class="btn btn-danger" onclick="resetTimerCompletely()">Reset Timer</button>
+                <button class="btn btn-secondary" onclick="closeCancelTimerDialog()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let workItems = [];
         let draggedElement = null;
@@ -859,6 +872,7 @@
         let contextMenuNoteId = null;
         let contextMenuWorkItemId = null;
         let autoSaveInterval = null;
+        let cancelingTimerId = null; // Track which timer is being canceled
 
         // Load from localStorage on startup
         window.addEventListener('DOMContentLoaded', function() {
@@ -1155,15 +1169,57 @@
         }
 
         function cancelTimer(itemId) {
-            const timer = activeTimers[itemId];
+            cancelingTimerId = itemId;
+            document.getElementById('cancelTimerOverlay').classList.add('active');
+        }
+
+        function closeCancelTimerDialog() {
+            document.getElementById('cancelTimerOverlay').classList.remove('active');
+            cancelingTimerId = null;
+        }
+
+        function closeTimerSaveProgress() {
+            if (cancelingTimerId === null) return;
+
+            const timer = activeTimers[cancelingTimerId];
             if (timer) {
+                // Calculate time used and update work item
+                const timeUsedSeconds = timer.totalSeconds - timer.remainingSeconds;
+                const timeUsedMinutes = Math.ceil(timeUsedSeconds / 60);
+
+                // Update the work item's total time to reflect the time used
+                const item = workItems[timer.index];
+                if (item) {
+                    item.totalMinutes = timeUsedMinutes;
+                }
+
+                // Clear the timer
                 clearInterval(timer.interval);
-                delete activeTimers[itemId];
+                delete activeTimers[cancelingTimerId];
                 saveToLocalStorage();
                 renderWorkItems();
                 renderActiveTimers();
                 updateSidebarVisibility();
             }
+
+            closeCancelTimerDialog();
+        }
+
+        function resetTimerCompletely() {
+            if (cancelingTimerId === null) return;
+
+            const timer = activeTimers[cancelingTimerId];
+            if (timer) {
+                // Simply clear the timer without updating work item time
+                clearInterval(timer.interval);
+                delete activeTimers[cancelingTimerId];
+                saveToLocalStorage();
+                renderWorkItems();
+                renderActiveTimers();
+                updateSidebarVisibility();
+            }
+
+            closeCancelTimerDialog();
         }
 
         function playAlarm() {

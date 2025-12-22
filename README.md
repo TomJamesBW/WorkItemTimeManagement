@@ -63,7 +63,20 @@ A single-page time management application for tracking work items with visual ti
 
 ## Version History
 
-### v1.22 (Current)
+### v1.23 (Current)
+**Features:**
+- Added cancel timer confirmation dialog with two options
+- **Close Timer (Save Progress)**: Closes timer and updates work item to reflect time already used
+- **Reset Timer**: Closes timer and restores work item to original time allocation
+
+**Changes:**
+- Cancel button now shows confirmation dialog instead of immediately canceling
+- Time progress can be saved when closing a timer early
+- Work item time dynamically updates based on cancel choice
+
+---
+
+### v1.22
 **Features:**
 - Added auto-save for active timers every 60 seconds (previously 10 seconds)
 - Live indicator (pulsing red dot) shows when timers are actively running
@@ -477,4 +490,4 @@ When timer finishes:
 This is a single-page application created for personal time management. Feel free to use and modify as needed.
 
 ## Support
-For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.22).
+For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.23).
