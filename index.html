@@ -45,6 +45,19 @@
             overflow: hidden;
         }
 
+        .notes-title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            z-index: 40;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+        }
+
         .timer-sidebar {
             width: 350px;
             background: white;
@@ -235,7 +248,7 @@
 
         .card-wrapper {
             display: flex;
-            flex-direction: column;
+            flex-direction: column-reverse;
             align-items: center;
             gap: 10px;
             min-width: 80px;
@@ -650,6 +663,7 @@
 
         <!-- Notes Section -->
         <div class="notes-section" id="notesSection">
+            <h2 class="notes-title">Notes</h2>
             <button class="add-note-btn" onclick="showAddNoteDialog()">+</button>
         </div>
     </div>
@@ -785,6 +799,18 @@
     <!-- Context Menu for Work Items -->
     <div class="context-menu" id="workItemContextMenu">
         <div class="context-menu-item delete" onclick="deleteWorkItemFromContext()">Delete</div>
+    </div>
+
+    <!-- Clear Confirmation Overlay -->
+    <div class="overlay" id="clearConfirmationOverlay">
+        <div class="floating-box">
+            <h2>Clear All Data</h2>
+            <p style="margin: 20px 0; text-align: center; font-size: 16px;">Are you sure you want to wipe all work items and notes? This action cannot be undone.</p>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="confirmClearWork()">Yes, Clear All</button>
+                <button class="btn btn-secondary" onclick="closeClearConfirmationDialog()">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1480,12 +1506,21 @@
         }
 
         function clearWork() {
-            if (confirm('Are you sure you want to clear all work items?')) {
-                workItems = [];
-                saveToLocalStorage();
-                renderWorkItems();
-                closeSaveLoadDialog();
-            }
+            closeSaveLoadDialog();
+            document.getElementById('clearConfirmationOverlay').classList.add('active');
+        }
+
+        function confirmClearWork() {
+            workItems = [];
+            stickyNotes = [];
+            saveToLocalStorage();
+            renderWorkItems();
+            renderNotes();
+            closeClearConfirmationDialog();
+        }
+
+        function closeClearConfirmationDialog() {
+            document.getElementById('clearConfirmationOverlay').classList.remove('active');
         }
 
         // LocalStorage Functions
