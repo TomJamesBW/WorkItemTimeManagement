@@ -30,8 +30,7 @@
 
         .work-items-section {
             height: 60%;
-            overflow-x: hidden;
-            overflow-y: auto;
+            overflow: hidden;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -90,6 +89,23 @@
             position: sticky;
             top: 0;
             z-index: 10;
+        }
+
+        .timer-sidebar::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .timer-sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        .timer-sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.5);
         }
 
 
@@ -264,8 +280,9 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 15px;
-            height: 100%;
-            width: 100%;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
         }
 
         .kanban-column {
@@ -276,6 +293,7 @@
             flex-direction: column;
             gap: 10px;
             min-height: 0;
+            overflow: hidden;
         }
 
         .kanban-column-header {
@@ -286,6 +304,7 @@
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 10px;
+            flex-shrink: 0;
         }
 
         .kanban-column-header.high {
@@ -307,10 +326,29 @@
         .kanban-column-cards {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
             gap: 10px;
             min-height: 0;
+        }
+
+        .kanban-column-cards::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .kanban-column-cards::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .kanban-column-cards::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .kanban-column-cards::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
 
         /* Work Item Card - Horizontal */
@@ -939,57 +977,55 @@
         const msalConfig = {
             auth: {
                 clientId: 'ba550467-95d1-4a39-98da-db155d745d85',
-                authority: 'https://login.microsoftonline.com/68cee11f-3d06-4913-b4a8-5197b2ebe777',
-                redirectUri: window.location.origin + window.location.pathname
+                authority: 'https://login.microsoftonline.com/common',
+                redirectUri: window.location.href.split('?')[0].split('#')[0]
             },
             cache: {
                 cacheLocation: 'localStorage',
                 storeAuthStateInCookie: false
+            },
+            system: {
+                allowRedirectInIframe: true
             }
         };
 
         const loginRequest = {
-            scopes: ['Files.ReadWrite', 'User.Read', 'offline_access', 'openid']
+            scopes: ['User.Read', 'Files.ReadWrite', 'offline_access']
         };
 
         let msalInstance = null;
         let currentAccount = null;
 
         // Initialize MSAL
-        function initializeMsal() {
-            msalInstance = new msal.PublicClientApplication(msalConfig);
+        async function initializeMsal() {
+            try {
+                msalInstance = new msal.PublicClientApplication(msalConfig);
+                await msalInstance.initialize();
 
-            // Handle redirect response
-            msalInstance.handleRedirectPromise()
-                .then(response => {
-                    if (response) {
-                        currentAccount = response.account;
-                        updateOneDriveStatus();
-                    } else {
-                        // Check if there's already a signed-in account
-                        const accounts = msalInstance.getAllAccounts();
-                        if (accounts.length > 0) {
-                            currentAccount = accounts[0];
-                            updateOneDriveStatus();
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('MSAL redirect error:', error);
-                });
+                // Check if there's already a signed-in account
+                const accounts = msalInstance.getAllAccounts();
+                if (accounts.length > 0) {
+                    currentAccount = accounts[0];
+                    updateOneDriveStatus();
+                }
+            } catch (error) {
+                console.error('MSAL initialization error:', error);
+            }
         }
 
         // Sign in to OneDrive
-        function signInToOneDrive() {
-            msalInstance.loginPopup(loginRequest)
-                .then(response => {
-                    currentAccount = response.account;
-                    updateOneDriveStatus();
-                })
-                .catch(error => {
-                    console.error('OneDrive sign-in error:', error);
+        async function signInToOneDrive() {
+            try {
+                const response = await msalInstance.loginPopup(loginRequest);
+                currentAccount = response.account;
+                updateOneDriveStatus();
+                console.log('Successfully signed in:', currentAccount.username);
+            } catch (error) {
+                console.error('OneDrive sign-in error:', error);
+                if (error.errorCode !== 'user_cancelled') {
                     alert('Failed to sign in to OneDrive: ' + error.message);
-                });
+                }
+            }
         }
 
         // Sign out from OneDrive
