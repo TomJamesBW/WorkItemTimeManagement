@@ -36,6 +36,19 @@
             align-items: center;
         }
 
+        .work-items-title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            z-index: 40;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+        }
+
         .notes-section {
             height: 50%;
             background: rgba(255, 255, 255, 0.1);
@@ -166,12 +179,12 @@
 
         /* Application Title */
         .app-title {
-            position: fixed;
+            position: absolute;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
             color: white;
-            font-size: 32px;
+            font-size: 28px;
             font-weight: bold;
             z-index: 100;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
@@ -646,9 +659,6 @@
 <body>
     <!-- Main Content Area -->
     <div class="main-content">
-        <!-- Application Title -->
-        <h1 class="app-title">Work Item Time Management</h1>
-
         <!-- Floating Buttons -->
         <button class="floating-btn add-btn" onclick="showAddItemDialog()">+</button>
         <button class="floating-btn save-load-btn" onclick="showSaveLoadDialog()">Save/Load</button>
@@ -658,6 +668,7 @@
 
         <!-- Work Items Section -->
         <div class="work-items-section">
+            <h2 class="work-items-title">Work Item Time Management</h2>
             <div class="cards-container" id="cardsContainer"></div>
         </div>
 

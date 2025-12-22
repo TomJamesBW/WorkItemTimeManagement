@@ -35,9 +35,9 @@ A single-page time management application for tracking work items with visual ti
 
 ### Data Management
 - **LocalStorage**: Automatic saving of all data
-- **JSON Export**: Save work items to JSON file
-- **JSON Import**: Load work items from JSON file
-- **Clear Work**: Option to clear all work items
+- **JSON Export**: Save work items and notes to JSON file
+- **JSON Import**: Load work items and notes from JSON file
+- **Clear Work**: Option to clear all work items and notes with confirmation dialog
 
 ## Technical Specifications
 
@@ -61,7 +61,21 @@ A single-page time management application for tracking work items with visual ti
 
 ## Version History
 
-### v1.20 (Current)
+### v1.21 (Current)
+**Features:**
+- Added "Notes" title to notes section
+- Work item start buttons moved to bottom of cards
+- Clear Work button now clears both work items and notes
+- Added confirmation dialog for Clear Work with warning message
+
+**Changes:**
+- Section titles aligned to their respective sections (Work Item Time Management, Notes)
+- Both section titles use consistent styling (28px, white, shadow effect)
+- Clear Work dialog warns users about wiping all data
+
+---
+
+### v1.20
 **Changes:**
 - Improved word wrapping to break at word boundaries instead of mid-word
 - Title now wraps at the last complete word before 20 characters
@@ -413,9 +427,9 @@ When timer finishes:
 7. Right-click to delete
 
 ### Saving/Loading
-- **Save to JSON**: Export work items to file
-- **Import JSON**: Load work items from file
-- **Clear Work**: Remove all work items
+- **Save to JSON**: Export work items and notes to file
+- **Import JSON**: Load work items and notes from file
+- **Clear Work**: Remove all work items and notes (with confirmation dialog)
 - Auto-save to localStorage on every change
 
 ## Keyboard Shortcuts
@@ -445,4 +459,4 @@ When timer finishes:
 This is a single-page application created for personal time management. Feel free to use and modify as needed.
 
 ## Support
-For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.14).
+For issues or feature requests, please refer to the version history and ensure you're using the latest version (v1.21).
