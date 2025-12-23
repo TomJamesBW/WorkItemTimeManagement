@@ -648,7 +648,7 @@ A single-page time management application for tracking work items with a kanban 
 This is a single-page application created for personal time management. Feel free to use and modify as needed.
 
 ## Support
-For issues or feature requests, please refer to the version history and ensure you're using the latest version (v2.11).
+For issues or feature requests, please refer to the version history and ensure you're using the latest version (v2.13).
 
 ## Migration from v1.x to v2.0
 If you have existing v1.x data:

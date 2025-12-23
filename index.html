@@ -869,7 +869,7 @@
         <button class="floating-btn settings-btn" onclick="showSettingsDialog()">Settings</button>
 
         <!-- Version Display -->
-        <div class="version">v2.12</div>
+        <div class="version">v2.13</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -1443,9 +1443,8 @@
                     const data = await response.json();
                     return data.archivedItems || [];
                 } else if (response.status === 404) {
-                    // File doesn't exist yet, create it with empty array
-                    console.log('Archive file not found, creating new one...');
-                    await saveArchiveToOneDrive([]);
+                    // File doesn't exist yet, return empty array (will be created on first save)
+                    console.log('Archive file not found, will be created on first save');
                     return [];
                 } else {
                     const errorText = await response.text();
@@ -1455,7 +1454,7 @@
             } catch (error) {
                 console.error('Error loading archive:', error);
                 // If it's a 404 or network error during load, return empty array
-                if (error.message.includes('404') || error.message.includes('NetworkError')) {
+                if (error.message && (error.message.includes('404') || error.message.includes('NetworkError'))) {
                     return [];
                 }
                 throw error;
