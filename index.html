@@ -800,8 +800,6 @@
             border-radius: 15px;
             margin-bottom: 15px;
             position: relative;
-            display: flex;
-            align-items: center;
             overflow: hidden;
         }
 
@@ -816,8 +814,11 @@
         }
 
         .progress-bar-container span {
-            position: relative;
-            width: 100%;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
             text-align: center;
             color: #333;
             font-weight: bold;
@@ -869,7 +870,7 @@
         <button class="floating-btn settings-btn" onclick="showSettingsDialog()">Settings</button>
 
         <!-- Version Display -->
-        <div class="version">v2.17</div>
+        <div class="version">v2.18</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
