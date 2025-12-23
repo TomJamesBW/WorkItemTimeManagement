@@ -2577,7 +2577,8 @@
                     // Show confirmation dialog with item title
                     document.getElementById('archiveConfirmItemTitle').textContent = item.title;
                     document.getElementById('archiveConfirmationOverlay').classList.add('active');
-                    closeWorkItemContextMenu();
+                    // Close context menu but DON'T clear contextMenuWorkItemId yet (needed for confirmation)
+                    document.getElementById('workItemContextMenu').classList.remove('active');
                 }
             }
         }
