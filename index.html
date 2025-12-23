@@ -800,6 +800,7 @@
             border-radius: 15px;
             overflow: hidden;
             margin-bottom: 15px;
+            position: relative;
         }
 
         .progress-bar {
@@ -807,12 +808,22 @@
             background: linear-gradient(90deg, #4CAF50, #45a049);
             width: 0%;
             transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-bar span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: #333;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 14px;
+            text-shadow: 0 0 3px rgba(255,255,255,0.8);
         }
 
         .progress-message {
@@ -1432,14 +1443,22 @@
                     const data = await response.json();
                     return data.archivedItems || [];
                 } else if (response.status === 404) {
-                    // File doesn't exist yet, return empty array
+                    // File doesn't exist yet, create it with empty array
+                    console.log('Archive file not found, creating new one...');
+                    await saveArchiveToOneDrive([]);
                     return [];
                 } else {
-                    throw new Error('Failed to load archive from OneDrive');
+                    const errorText = await response.text();
+                    console.error('Archive load error:', response.status, errorText);
+                    throw new Error(`Failed to load archive: ${response.status}`);
                 }
             } catch (error) {
                 console.error('Error loading archive:', error);
-                return [];
+                // If it's a 404 or network error during load, return empty array
+                if (error.message.includes('404') || error.message.includes('NetworkError')) {
+                    return [];
+                }
+                throw error;
             }
         }
 
@@ -1449,12 +1468,14 @@
             }
 
             try {
+                console.log('Ensuring OneDrive folder exists...');
                 await ensureOneDriveFolder();
 
                 const archiveData = {
                     archivedItems: archivedItems
                 };
 
+                console.log('Saving archive with', archivedItems.length, 'items...');
                 const dataStr = JSON.stringify(archiveData, null, 2);
                 const token = await getOneDriveAccessToken();
 
@@ -1471,9 +1492,12 @@
                 );
 
                 if (!response.ok) {
-                    throw new Error('Failed to save archive to OneDrive');
+                    const errorText = await response.text();
+                    console.error('Save archive error:', response.status, errorText);
+                    throw new Error(`Failed to save archive to OneDrive: ${response.status}`);
                 }
 
+                console.log('Archive saved successfully!');
                 return true;
             } catch (error) {
                 console.error('Error saving archive:', error);
