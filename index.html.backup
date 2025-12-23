@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Management</title>
+    <script src="https://alcdn.msauth.net/browser/2.38.1/js/msal-browser.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -28,12 +29,12 @@
         }
 
         .work-items-section {
-            height: 50%;
-            overflow-x: auto;
-            overflow-y: hidden;
+            height: 60%;
+            overflow: hidden;
             position: relative;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            padding: 90px 20px 20px 20px;
         }
 
         .work-items-title {
@@ -50,12 +51,12 @@
         }
 
         .notes-section {
-            height: 50%;
+            height: 40%;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-top: 2px solid rgba(255, 255, 255, 0.3);
             position: relative;
-            overflow: hidden;
+            overflow: auto;
         }
 
         .notes-title {
@@ -88,6 +89,23 @@
             position: sticky;
             top: 0;
             z-index: 10;
+        }
+
+        .timer-sidebar::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .timer-sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        .timer-sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.5);
         }
 
 
@@ -226,7 +244,7 @@
             border-radius: 30px;
         }
 
-        .sort-btn {
+        .settings-btn {
             left: 205px;
             background: #9C27B0;
             color: white;
@@ -257,82 +275,136 @@
             transform: scale(1.1);
         }
 
-        /* Cards Container */
+        /* Kanban Board Container */
         .cards-container {
-            display: flex;
-            width: calc(100% - 40px);
-            max-height: calc(100% - 120px);
-            margin: 0 20px;
-            padding: 80px 0 40px 0;
-            gap: 5px;
-            align-items: stretch;
-            box-sizing: content-box;
+            display: grid;
+            grid-template-columns: repeat(4, 300px);
+            gap: 15px;
+            flex: 1;
+            min-height: 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 10px;
         }
 
-        .card-wrapper {
-            display: flex;
-            flex-direction: column-reverse;
-            align-items: center;
-            gap: 10px;
-            min-width: 80px;
+        .cards-container::-webkit-scrollbar {
+            height: 10px;
         }
 
-        .card-control-btn {
-            padding: 8px 16px;
-            border: none;
+        .cards-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            background: #4CAF50;
-            color: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            transition: opacity 0.2s;
-            min-width: 80px;
         }
 
-        .card-control-btn:hover {
-            opacity: 0.8;
+        .cards-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
         }
 
-        .card-control-btn.pause-btn {
-            background: #FF9800;
+        .cards-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
 
-        .card-control-btn.locked {
-            background: #4CAF50;
-            cursor: not-allowed;
-            color: white;
-            font-size: 20px;
-        }
-
-        /* Work Item Card */
-        .work-card {
-            position: relative;
-            border-radius: 15px;
-            padding: 20px;
+        .kanban-column {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            cursor: move;
-            transition: all 0.3s;
-            width: 100%;
+            gap: 10px;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .kanban-column-header {
+            font-weight: bold;
+            font-size: 18px;
+            color: rgb(39, 39, 39);
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .kanban-column-header.high {
+            background: #FFB3BA;
+        }
+
+        .kanban-column-header.medium {
+            background: #FFE4A3;
+        }
+
+        .kanban-column-header.low {
+            background: #B4E7B4;
+        }
+
+        .kanban-column-header.none {
+            background: #AED6F1;
+        }
+
+        .kanban-column-cards {
             flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0;
+        }
+
+        .kanban-column-cards::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .kanban-column-cards::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .kanban-column-cards::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .kanban-column-cards::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Work Item Card - Horizontal */
+        .work-card {
+            position: relative;
+            border-radius: 8px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 60px;
+            max-height: 80px;
+            border: 2px solid rgba(0, 0, 0, 0.3);
         }
 
         .work-card.high {
-            background: #f44336;
-            border: 4px solid #000;
+            background: #FFB3BA;
         }
 
         .work-card.medium {
-            background: #FFD700;
-            border: 4px solid #000;
+            background: #FFE4A3;
         }
 
         .work-card.low {
-            background: #4CAF50;
-            border: 4px solid #000;
+            background: #B4E7B4;
+        }
+
+        .work-card.none {
+            background: #AED6F1;
+        }
+
+        .work-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .work-card.dragging {
@@ -340,45 +412,27 @@
         }
 
         .card-content {
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            transform: rotate(180deg);
+            flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            gap: 5px;
+            overflow: hidden;
         }
 
         .card-title {
             font-weight: bold;
-            font-size: 24px;
-            color: #000;
-            margin-bottom: 10px;
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
-            white-space: normal;
-            transition: font-size 0.2s;
-        }
-
-        .card-title.small {
             font-size: 16px;
-        }
-
-        .card-title.tiny {
-            font-size: 12px;
+            color: #000;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
         }
 
         .card-time {
-            font-size: 16px;
-            color: #000;
-            transition: font-size 0.2s;
-        }
-
-        .card-time.small {
-            font-size: 12px;
-        }
-
-        .card-time.tiny {
-            font-size: 10px;
+            font-size: 14px;
+            color: #333;
+            white-space: nowrap;
         }
 
         /* Floating Box Overlay */
@@ -612,9 +666,11 @@
 
         .note-content {
             padding: 10px 15px;
+            padding-right: 20px;
             overflow-y: auto;
             overflow-x: hidden;
             flex: 1;
+            white-space: pre-wrap;
         }
 
         .sticky-note.collapsed .note-content {
@@ -723,10 +779,10 @@
         <!-- Floating Buttons -->
         <button class="floating-btn add-btn" onclick="showAddItemDialog()">+</button>
         <button class="floating-btn save-load-btn" onclick="showSaveLoadDialog()">Save/Load</button>
-        <button class="floating-btn sort-btn" onclick="sortWorkItems()">Sort</button>
+        <button class="floating-btn settings-btn" onclick="showSettingsDialog()">Settings</button>
 
         <!-- Version Display -->
-        <div class="version">v1.27</div>
+        <div class="version">v2.1</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -752,29 +808,12 @@
         <div class="floating-box">
             <h2>Add Work Item</h2>
             <div class="form-group">
-                <label for="workItemTitle">Work Item</label>
-                <input type="text" id="workItemTitle" placeholder="Enter work item name">
+                <label for="workItemTitle">Title</label>
+                <input type="text" id="workItemTitle" placeholder="Enter work item title">
             </div>
             <div class="form-group">
-                <label>Time Required</label>
-                <div class="time-inputs">
-                    <div style="flex: 1;">
-                        <label style="font-size: 12px; font-weight: normal;">Hours</label>
-                        <input type="number" id="workItemHours" placeholder="Hours" min="0" value="0">
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 12px; font-weight: normal;">Minutes</label>
-                        <input type="number" id="workItemMinutes" placeholder="Minutes" min="0" max="59" value="0">
-                    </div>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="workItemPriority">Priority</label>
-                <select id="workItemPriority">
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                </select>
+                <label for="workItemDescription">Description</label>
+                <textarea id="workItemDescription" placeholder="Enter work item description..." style="width: 100%; height: 100px; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px; resize: vertical;"></textarea>
             </div>
             <div class="btn-group">
                 <button class="btn btn-primary" onclick="addWorkItem()">Add</button>
@@ -783,32 +822,28 @@
         </div>
     </div>
 
-    <!-- Add Time Overlay -->
-    <div class="overlay" id="addTimeOverlay">
-        <div class="floating-box">
-            <h2>Add More Time</h2>
+    <!-- Work Item Detail Overlay -->
+    <div class="overlay" id="workItemDetailOverlay">
+        <div class="floating-box" style="max-width: 500px;">
+            <h2 id="detailTitle">Work Item Details</h2>
             <div class="form-group">
-                <label>Additional Time</label>
-                <div class="time-inputs">
-                    <input type="number" id="addTimeHours" placeholder="Hours" min="0" value="0">
-                    <input type="number" id="addTimeMinutes" placeholder="Minutes" min="0" max="59" value="0">
-                </div>
+                <label>Title</label>
+                <p id="detailTitleText" style="margin: 5px 0; font-size: 16px; font-weight: bold;"></p>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <p id="detailDescription" style="margin: 5px 0; font-size: 14px; color: #555; white-space: pre-wrap;"></p>
+            </div>
+            <div class="form-group">
+                <label>Total Time Logged</label>
+                <p id="detailTimeLogged" style="margin: 5px 0; font-size: 16px; font-weight: bold; color: #4CAF50;"></p>
+            </div>
+            <div class="form-group">
+                <label>Last 7 Days</label>
+                <div id="detailDailyBreakdown" style="margin: 10px 0; max-height: 250px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 10px; background: #f9f9f9;"></div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-primary" onclick="addMoreTime()">Add</button>
-                <button class="btn btn-secondary" onclick="closeAddTimeDialog()">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Completion Overlay -->
-    <div class="overlay" id="completionOverlay">
-        <div class="floating-box">
-            <h2>Timer Complete!</h2>
-            <p style="margin: 20px 0; text-align: center; font-size: 18px;">What would you like to do?</p>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="completeWorkItem()">Complete Item</button>
-                <button class="btn btn-info" onclick="showAddTimeFromCompletion(currentTimerForAddTime)">Add More Time</button>
+                <button class="btn btn-secondary" onclick="closeWorkItemDetail()">Close</button>
             </div>
         </div>
     </div>
@@ -820,6 +855,11 @@
             <div class="menu-buttons">
                 <button class="btn btn-primary" onclick="saveToJSON()">Save to JSON</button>
                 <button class="btn btn-info" onclick="document.getElementById('importFile').click()">Import JSON</button>
+                <div id="oneDriveButtons" style="display: none;">
+                    <button class="btn btn-primary" onclick="exportToOneDrive()" style="background: #0078D4;">Export to OneDrive</button>
+                    <button class="btn btn-info" onclick="importFromOneDrive()" style="background: #0078D4;">Import from OneDrive</button>
+                </div>
+                <button class="btn btn-info" onclick="showArchiveView()">View Archive</button>
                 <button class="btn btn-danger" onclick="clearWork()">Clear Work</button>
                 <button class="btn btn-secondary" onclick="closeSaveLoadDialog()">Cancel</button>
             </div>
@@ -871,6 +911,7 @@
 
     <!-- Context Menu for Work Items -->
     <div class="context-menu" id="workItemContextMenu">
+        <div class="context-menu-item" onclick="archiveWorkItemFromContext()">Archive</div>
         <div class="context-menu-item delete" onclick="deleteWorkItemFromContext()">Delete</div>
     </div>
 
@@ -886,15 +927,66 @@
         </div>
     </div>
 
-    <!-- Cancel Timer Confirmation Overlay -->
-    <div class="overlay" id="cancelTimerOverlay">
-        <div class="floating-box">
-            <h2>Cancel Timer</h2>
-            <p style="margin: 20px 0; text-align: center; font-size: 16px;">What would you like to do with this timer?</p>
+    <!-- Archive View Overlay -->
+    <div class="overlay" id="archiveViewOverlay">
+        <div class="floating-box" style="max-width: 600px; max-height: 80vh;">
+            <h2>Archived Items</h2>
+            <div id="archiveList" style="max-height: 400px; overflow-y: auto; margin: 20px 0;">
+                <!-- Archive items will be rendered here -->
+            </div>
             <div class="btn-group">
-                <button class="btn btn-primary" onclick="closeTimerSaveProgress()">Close Timer (Save Progress)</button>
-                <button class="btn btn-danger" onclick="resetTimerCompletely()">Reset Timer</button>
-                <button class="btn btn-secondary" onclick="closeCancelTimerDialog()">Cancel</button>
+                <button class="btn btn-secondary" onclick="closeArchiveView()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Archive Confirmation Overlay -->
+    <div class="overlay" id="archiveConfirmationOverlay">
+        <div class="floating-box">
+            <h2>Archive Work Item</h2>
+            <div style="margin: 20px 0;">
+                <p style="font-size: 16px; margin-bottom: 15px; color: #333;">You are about to archive:</p>
+                <p style="font-weight: bold; font-size: 18px; color: #000; margin-bottom: 20px;" id="archiveConfirmItemTitle"></p>
+                <div style="background: #FFF3CD; border: 2px solid #FFC107; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 24px; margin-right: 10px;">⚠️</span>
+                        <strong style="color: #856404;">Warning: Time Data Will Be Lost</strong>
+                    </div>
+                    <p style="color: #856404; font-size: 14px; line-height: 1.5;">
+                        Archiving will permanently remove all time tracking data for this item. Only the title, description, and priority will be saved. This action cannot be undone.
+                    </p>
+                </div>
+                <p style="font-size: 14px; color: #666;">Do you want to continue?</p>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="confirmArchiveWorkItem()">Yes, Archive</button>
+                <button class="btn btn-secondary" onclick="closeArchiveConfirmation()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Overlay -->
+    <div class="overlay" id="settingsOverlay">
+        <div class="floating-box">
+            <h2>Settings</h2>
+            <div style="margin: 20px 0;">
+                <h3 style="font-size: 18px; margin-bottom: 15px; color: #333;">OneDrive Integration</h3>
+                <div id="oneDriveStatus" style="margin-bottom: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 14px;">
+                    Not signed in
+                </div>
+                <button class="btn btn-primary" id="oneDriveSignInBtn" onclick="signInToOneDrive()">Sign In to OneDrive</button>
+                <button class="btn btn-danger" id="oneDriveSignOutBtn" onclick="signOutFromOneDrive()" style="display: none;">Sign Out</button>
+
+                <div id="autoBackupSection" style="display: none; margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 5px;">
+                    <label style="display: flex; align-items: center; cursor: pointer; font-size: 14px;">
+                        <input type="checkbox" id="autoBackupCheckbox" onchange="toggleAutoBackup()" style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
+                        <span>Enable automatic backup every 1 hour</span>
+                    </label>
+                    <div id="lastBackupTime" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="closeSettingsDialog()">Close</button>
             </div>
         </div>
     </div>
@@ -902,9 +994,9 @@
     <script>
         let workItems = [];
         let draggedElement = null;
-        let activeTimers = {}; // Store multiple timers by work item ID
-        let currentTimerForAddTime = null; // Track which timer is getting more time added
+        let activeTimers = {}; // Store timers by work item ID
         let stickyNotes = [];
+        let archivedItems = []; // Store archived items (title, description, priority only)
         let selectedNoteColor = '#FFD700';
         let draggedNote = null;
         let noteOffsetX = 0;
@@ -912,10 +1004,378 @@
         let contextMenuNoteId = null;
         let contextMenuWorkItemId = null;
         let autoSaveInterval = null;
-        let cancelingTimerId = null; // Track which timer is being canceled
+        let draggedCardId = null; // For drag-to-timer functionality
+        let draggedFromColumn = null;
+
+        // MSAL Configuration for OneDrive
+        const msalConfig = {
+            auth: {
+                clientId: 'ba550467-95d1-4a39-98da-db155d745d85',
+                authority: 'https://login.microsoftonline.com/common',
+                redirectUri: window.location.href.split('?')[0].split('#')[0]
+            },
+            cache: {
+                cacheLocation: 'localStorage',
+                storeAuthStateInCookie: false
+            },
+            system: {
+                allowRedirectInIframe: true
+            }
+        };
+
+        const loginRequest = {
+            scopes: ['User.Read', 'Files.ReadWrite', 'offline_access']
+        };
+
+        let msalInstance = null;
+        let currentAccount = null;
+        let oneDriveAccessToken = null;
+        let autoBackupEnabled = false;
+        let autoBackupInterval = null;
+        const ONEDRIVE_FOLDER_NAME = 'WorkItemTimeManagement';
+        const ONEDRIVE_BACKUP_FILE = 'remote-backup.json';
+
+        // Initialize MSAL
+        async function initializeMsal() {
+            try {
+                msalInstance = new msal.PublicClientApplication(msalConfig);
+                await msalInstance.initialize();
+
+                // Check if there's already a signed-in account
+                const accounts = msalInstance.getAllAccounts();
+                if (accounts.length > 0) {
+                    currentAccount = accounts[0];
+                    updateOneDriveStatus();
+                }
+            } catch (error) {
+                console.error('MSAL initialization error:', error);
+            }
+        }
+
+        // Sign in to OneDrive
+        async function signInToOneDrive() {
+            try {
+                const response = await msalInstance.loginPopup(loginRequest);
+                currentAccount = response.account;
+                updateOneDriveStatus();
+                console.log('Successfully signed in:', currentAccount.username);
+            } catch (error) {
+                console.error('OneDrive sign-in error:', error);
+                if (error.errorCode !== 'user_cancelled') {
+                    alert('Failed to sign in to OneDrive: ' + error.message);
+                }
+            }
+        }
+
+        // Sign out from OneDrive
+        function signOutFromOneDrive() {
+            if (currentAccount) {
+                // Stop auto backup
+                if (autoBackupInterval) {
+                    clearInterval(autoBackupInterval);
+                    autoBackupInterval = null;
+                }
+                autoBackupEnabled = false;
+
+                msalInstance.logoutPopup({
+                    account: currentAccount
+                }).then(() => {
+                    currentAccount = null;
+                    oneDriveAccessToken = null;
+                    updateOneDriveStatus();
+                }).catch(error => {
+                    console.error('OneDrive sign-out error:', error);
+                });
+            }
+        }
+
+        // Get OneDrive access token
+        async function getOneDriveAccessToken() {
+            if (!currentAccount) {
+                throw new Error('Not signed in to OneDrive');
+            }
+
+            try {
+                const response = await msalInstance.acquireTokenSilent({
+                    scopes: loginRequest.scopes,
+                    account: currentAccount
+                });
+                oneDriveAccessToken = response.accessToken;
+                return oneDriveAccessToken;
+            } catch (error) {
+                console.error('Silent token acquisition failed, trying popup', error);
+                const response = await msalInstance.acquireTokenPopup({
+                    scopes: loginRequest.scopes,
+                    account: currentAccount
+                });
+                oneDriveAccessToken = response.accessToken;
+                return oneDriveAccessToken;
+            }
+        }
+
+        // Ensure OneDrive folder exists
+        async function ensureOneDriveFolder() {
+            const token = await getOneDriveAccessToken();
+
+            // Check if folder exists
+            try {
+                const response = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${ONEDRIVE_FOLDER_NAME}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (error) {
+                console.log('Folder does not exist, creating it');
+            }
+
+            // Create folder
+            const response = await fetch('https://graph.microsoft.com/v1.0/me/drive/root/children', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: ONEDRIVE_FOLDER_NAME,
+                    folder: {},
+                    '@microsoft.graph.conflictBehavior': 'fail'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create OneDrive folder');
+            }
+
+            return await response.json();
+        }
+
+        // Export to OneDrive
+        async function exportToOneDrive() {
+            try {
+                await ensureOneDriveFolder();
+
+                const exportData = {
+                    workItems: workItems,
+                    stickyNotes: stickyNotes,
+                    archivedItems: archivedItems,
+                    activeTimers: serializeActiveTimers()
+                };
+
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const token = await getOneDriveAccessToken();
+
+                const response = await fetch(
+                    `https://graph.microsoft.com/v1.0/me/drive/root:/${ONEDRIVE_FOLDER_NAME}/${ONEDRIVE_BACKUP_FILE}:/content`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: dataStr
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to export to OneDrive');
+                }
+
+                // Update last backup time
+                const now = new Date();
+                localStorage.setItem('lastOneDriveBackup', now.toISOString());
+                updateLastBackupTime();
+
+                alert('Successfully exported to OneDrive!');
+            } catch (error) {
+                console.error('OneDrive export error:', error);
+                alert('Failed to export to OneDrive: ' + error.message);
+            }
+        }
+
+        // Import from OneDrive
+        async function importFromOneDrive() {
+            try {
+                const token = await getOneDriveAccessToken();
+
+                const response = await fetch(
+                    `https://graph.microsoft.com/v1.0/me/drive/root:/${ONEDRIVE_FOLDER_NAME}/${ONEDRIVE_BACKUP_FILE}:/content`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        alert('No backup file found on OneDrive. Please export first.');
+                    } else {
+                        throw new Error('Failed to import from OneDrive');
+                    }
+                    return;
+                }
+
+                const imported = await response.json();
+
+                workItems = imported.workItems || [];
+                workItems = workItems.map(item => migrateWorkItem(item));
+
+                stickyNotes = imported.stickyNotes || [];
+                archivedItems = imported.archivedItems || [];
+
+                if (imported.activeTimers) {
+                    deserializeActiveTimers(imported.activeTimers);
+                }
+
+                saveToLocalStorage();
+                renderWorkItems();
+                renderNotes();
+                closeSaveLoadDialog();
+
+                alert('Successfully imported from OneDrive!');
+            } catch (error) {
+                console.error('OneDrive import error:', error);
+                alert('Failed to import from OneDrive: ' + error.message);
+            }
+        }
+
+        // Auto backup to OneDrive
+        async function autoBackupToOneDrive() {
+            if (!currentAccount || !autoBackupEnabled) {
+                return;
+            }
+
+            try {
+                await ensureOneDriveFolder();
+
+                const exportData = {
+                    workItems: workItems,
+                    stickyNotes: stickyNotes,
+                    archivedItems: archivedItems,
+                    activeTimers: serializeActiveTimers()
+                };
+
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const token = await getOneDriveAccessToken();
+
+                const response = await fetch(
+                    `https://graph.microsoft.com/v1.0/me/drive/root:/${ONEDRIVE_FOLDER_NAME}/${ONEDRIVE_BACKUP_FILE}:/content`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: dataStr
+                    }
+                );
+
+                if (response.ok) {
+                    const now = new Date();
+                    localStorage.setItem('lastOneDriveBackup', now.toISOString());
+                    updateLastBackupTime();
+                    console.log('Auto backup to OneDrive successful');
+                }
+            } catch (error) {
+                console.error('Auto backup failed:', error);
+            }
+        }
+
+        // Toggle auto backup
+        function toggleAutoBackup() {
+            const checkbox = document.getElementById('autoBackupCheckbox');
+            autoBackupEnabled = checkbox.checked;
+            localStorage.setItem('autoBackupEnabled', autoBackupEnabled);
+
+            if (autoBackupEnabled) {
+                // Start auto backup interval (1 hour = 3600000 ms)
+                if (autoBackupInterval) {
+                    clearInterval(autoBackupInterval);
+                }
+                autoBackupInterval = setInterval(autoBackupToOneDrive, 3600000);
+
+                // Do an immediate backup
+                autoBackupToOneDrive();
+            } else {
+                // Stop auto backup
+                if (autoBackupInterval) {
+                    clearInterval(autoBackupInterval);
+                    autoBackupInterval = null;
+                }
+            }
+        }
+
+        // Update last backup time display
+        function updateLastBackupTime() {
+            const lastBackup = localStorage.getItem('lastOneDriveBackup');
+            const lastBackupDiv = document.getElementById('lastBackupTime');
+
+            if (lastBackup) {
+                const date = new Date(lastBackup);
+                lastBackupDiv.textContent = `Last backup: ${date.toLocaleString()}`;
+            } else {
+                lastBackupDiv.textContent = 'No backups yet';
+            }
+        }
+
+        // Update OneDrive status display
+        function updateOneDriveStatus() {
+            const statusDiv = document.getElementById('oneDriveStatus');
+            const signInBtn = document.getElementById('oneDriveSignInBtn');
+            const signOutBtn = document.getElementById('oneDriveSignOutBtn');
+            const autoBackupSection = document.getElementById('autoBackupSection');
+            const oneDriveButtons = document.getElementById('oneDriveButtons');
+
+            if (currentAccount) {
+                statusDiv.innerHTML = `Signed in as: <strong>${currentAccount.username}</strong>`;
+                statusDiv.style.background = '#d4edda';
+                statusDiv.style.color = '#155724';
+                signInBtn.style.display = 'none';
+                signOutBtn.style.display = 'inline-block';
+                autoBackupSection.style.display = 'block';
+                if (oneDriveButtons) oneDriveButtons.style.display = 'block';
+
+                // Restore auto backup setting
+                const savedAutoBackup = localStorage.getItem('autoBackupEnabled');
+                if (savedAutoBackup === 'true') {
+                    autoBackupEnabled = true;
+                    document.getElementById('autoBackupCheckbox').checked = true;
+                    // Restart interval
+                    if (autoBackupInterval) {
+                        clearInterval(autoBackupInterval);
+                    }
+                    autoBackupInterval = setInterval(autoBackupToOneDrive, 3600000);
+                }
+
+                updateLastBackupTime();
+            } else {
+                statusDiv.innerHTML = 'Not signed in';
+                statusDiv.style.background = '#f0f0f0';
+                statusDiv.style.color = '#333';
+                signInBtn.style.display = 'inline-block';
+                signOutBtn.style.display = 'none';
+                autoBackupSection.style.display = 'none';
+                if (oneDriveButtons) oneDriveButtons.style.display = 'none';
+            }
+        }
+
+        // Settings dialog functions
+        function showSettingsDialog() {
+            updateOneDriveStatus();
+            document.getElementById('settingsOverlay').classList.add('active');
+        }
+
+        function closeSettingsDialog() {
+            document.getElementById('settingsOverlay').classList.remove('active');
+        }
 
         // Load from localStorage on startup
         window.addEventListener('DOMContentLoaded', function() {
+            initializeMsal();
             loadFromLocalStorage();
             renderWorkItems();
             renderNotes();
@@ -945,6 +1405,7 @@
         }
 
         function showSaveLoadDialog() {
+            updateOneDriveStatus();
             document.getElementById('saveLoadOverlay').classList.add('active');
         }
 
@@ -954,37 +1415,25 @@
 
         function clearAddItemForm() {
             document.getElementById('workItemTitle').value = '';
-            document.getElementById('workItemHours').value = '0';
-            document.getElementById('workItemMinutes').value = '0';
-            document.getElementById('workItemPriority').value = 'high';
+            document.getElementById('workItemDescription').value = '';
         }
 
         // Add Work Item
         function addWorkItem() {
             const title = document.getElementById('workItemTitle').value.trim();
-            const hours = parseInt(document.getElementById('workItemHours').value) || 0;
-            const minutes = parseInt(document.getElementById('workItemMinutes').value) || 0;
-            const priority = document.getElementById('workItemPriority').value;
+            const description = document.getElementById('workItemDescription').value.trim();
 
             if (!title) {
-                alert('Please enter a work item name');
+                alert('Please enter a work item title');
                 return;
             }
 
-            if (hours === 0 && minutes === 0) {
-                alert('Please enter a time duration');
-                return;
-            }
-
-            const totalMinutes = hours * 60 + minutes;
             const workItem = {
                 id: Date.now(),
                 title: title,
-                totalMinutes: totalMinutes,
-                originalMinutes: totalMinutes, // Store original time allocation
-                priority: priority,
-                locked: false,
-                accumulatedMinutes: 0 // Track time already used
+                description: description,
+                priority: 'none', // All new items start in "No Priority"
+                timeRecordings: [] // Array of {startTime, endTime, duration}
             };
 
             workItems.push(workItem);
@@ -994,215 +1443,231 @@
             closeAddItemDialog();
         }
 
-        // Sort Work Items by time (largest to smallest)
-        function sortWorkItems() {
-            workItems.sort((a, b) => b.totalMinutes - a.totalMinutes);
-            saveToLocalStorage();
-            renderWorkItems();
-        }
-
-        // Render Work Items
+        // Render Work Items in Kanban Board
         function renderWorkItems() {
             const container = document.getElementById('cardsContainer');
             container.innerHTML = '';
 
-            if (workItems.length === 0) return;
+            // Create 4 columns
+            const columns = {
+                high: { title: 'High', items: [] },
+                medium: { title: 'Medium', items: [] },
+                low: { title: 'Low', items: [] },
+                none: { title: 'No Priority', items: [] }
+            };
 
-            const totalMinutes = workItems.reduce((sum, item) => sum + item.totalMinutes, 0);
-
-            workItems.forEach((item, index) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'card-wrapper';
-
-                // Use flexbox grow based on time proportion
-                wrapper.style.flexGrow = item.totalMinutes;
-                wrapper.style.flexShrink = 1;
-                wrapper.style.flexBasis = '0';
-
-                // Determine button state
-                let buttonClass = '';
-                let buttonText = 'Start';
-                let buttonAction = `startTimer(${index})`;
-
-                // Check if there's a paused timer for this item
-                let displayTime = '';
-                const hours = Math.floor(item.totalMinutes / 60);
-                const minutes = item.totalMinutes % 60;
-                let timeText = `${hours}h ${minutes}m`;
-
-                // Add accumulated time if it exists
-                const accumulatedMinutes = item.accumulatedMinutes || 0;
-                if (accumulatedMinutes > 0) {
-                    const accHours = Math.floor(accumulatedMinutes / 60);
-                    const accMins = accumulatedMinutes % 60;
-                    timeText += ` (${accHours}h ${accMins}m)`;
+            // Sort items into columns
+            workItems.forEach(item => {
+                const priority = item.priority || 'none';
+                if (columns[priority]) {
+                    columns[priority].items.push(item);
                 }
-
-                if (item.locked) {
-                    buttonClass = 'locked';
-                    buttonText = '✓';
-                    buttonAction = '';
-                    displayTime = timeText;
-                } else if (activeTimers[item.id]) {
-                    const timer = activeTimers[item.id];
-                    if (timer.paused) {
-                        buttonClass = '';
-                        buttonText = 'Resume';
-                        buttonAction = `resumeTimer(${item.id})`;
-
-                        // Calculate time left and time recorded
-                        const remainingHours = Math.floor(timer.remainingSeconds / 3600);
-                        const remainingMinutes = Math.floor((timer.remainingSeconds % 3600) / 60);
-                        const recordedSeconds = timer.totalSeconds - timer.remainingSeconds;
-                        const recordedHours = Math.floor(recordedSeconds / 3600);
-                        const recordedMinutes = Math.floor((recordedSeconds % 3600) / 60);
-
-                        displayTime = `${remainingHours}h ${remainingMinutes}m (${recordedHours}h ${recordedMinutes}m)`;
-                    } else {
-                        buttonClass = 'pause-btn';
-                        buttonText = 'Pause';
-                        buttonAction = `pauseTimerAndClose(${item.id})`;
-                        displayTime = timeText;
-                    }
-                } else {
-                    displayTime = timeText;
-                }
-
-                wrapper.innerHTML = `
-                    <button class="card-control-btn ${buttonClass}"
-                            onclick="${buttonAction}">
-                        ${buttonText}
-                    </button>
-                `;
-
-                const card = document.createElement('div');
-                card.className = `work-card ${item.priority}`;
-                card.draggable = true;
-                card.dataset.index = index;
-
-                // Format title: max 40 chars, wrap at word boundary near 20 chars
-                let formattedTitle = item.title.substring(0, 40);
-                if (formattedTitle.length > 20) {
-                    // Find the last space before or at position 20
-                    let breakPoint = formattedTitle.lastIndexOf(' ', 20);
-                    // If no space found or it's too early, break at 20
-                    if (breakPoint === -1 || breakPoint < 10) {
-                        breakPoint = 20;
-                    }
-                    formattedTitle = formattedTitle.substring(0, breakPoint).trim() + '<br>' + formattedTitle.substring(breakPoint).trim();
-                }
-
-                card.innerHTML = `
-                    <div class="card-content">
-                        <div class="card-title">${formattedTitle}</div>
-                        <div class="card-time">${displayTime}</div>
-                    </div>
-                `;
-
-                // Drag events
-                card.addEventListener('dragstart', handleDragStart);
-                card.addEventListener('dragover', handleDragOver);
-                card.addEventListener('drop', handleDrop);
-                card.addEventListener('dragend', handleDragEnd);
-                card.addEventListener('contextmenu', (e) => showWorkItemContextMenu(e, item.id));
-
-                wrapper.appendChild(card);
-                container.appendChild(wrapper);
             });
 
-            // Apply uniform font sizing after all cards are rendered
-            setTimeout(() => {
-                const allCards = container.querySelectorAll('.work-card');
-                if (allCards.length === 0) return;
+            // Render each column
+            Object.keys(columns).forEach(priority => {
+                const column = columns[priority];
+                const columnDiv = document.createElement('div');
+                columnDiv.className = 'kanban-column';
+                columnDiv.dataset.priority = priority;
 
-                // Calculate average card width
-                let totalWidth = 0;
-                let hasWrappedText = false;
+                // Column header
+                const header = document.createElement('div');
+                header.className = `kanban-column-header ${priority}`;
+                header.textContent = column.title;
+                columnDiv.appendChild(header);
 
-                allCards.forEach((card, idx) => {
-                    totalWidth += card.offsetWidth;
-                    const item = workItems[idx];
-                    if (item && (item.title.length > 20 || item.title.includes(' '))) {
-                        const titleEl = card.querySelector('.card-title');
-                        if (titleEl && titleEl.innerHTML.includes('<br>')) {
-                            hasWrappedText = true;
-                        }
-                    }
+                // Column cards container
+                const cardsContainer = document.createElement('div');
+                cardsContainer.className = 'kanban-column-cards';
+                cardsContainer.dataset.priority = priority;
+
+                // Add drop event listeners to column
+                cardsContainer.addEventListener('dragover', handleColumnDragOver);
+                cardsContainer.addEventListener('drop', handleColumnDrop);
+
+                // Render cards in this column
+                column.items.forEach(item => {
+                    const card = createWorkCard(item);
+                    cardsContainer.appendChild(card);
                 });
 
-                const avgWidth = totalWidth / allCards.length;
-
-                // Determine size class based on average width or wrapped text
-                let sizeClass = '';
-                if (avgWidth < 60 || hasWrappedText) {
-                    sizeClass = 'tiny';
-                } else if (avgWidth < 90) {
-                    sizeClass = 'small';
-                }
-
-                // Apply the same size class to all cards
-                if (sizeClass) {
-                    allCards.forEach(card => {
-                        const titleEl = card.querySelector('.card-title');
-                        const timeEl = card.querySelector('.card-time');
-                        if (titleEl && timeEl) {
-                            titleEl.classList.add(sizeClass);
-                            timeEl.classList.add(sizeClass);
-                        }
-                    });
-                }
-            }, 0);
+                columnDiv.appendChild(cardsContainer);
+                container.appendChild(columnDiv);
+            });
         }
 
-        // Drag and Drop
-        function handleDragStart(e) {
-            draggedElement = this;
+        // Create a work card element
+        function createWorkCard(item) {
+            const card = document.createElement('div');
+            card.className = `work-card ${item.priority}`;
+            card.draggable = true;
+            card.dataset.itemId = item.id;
+
+            // Calculate total time logged
+            const totalSeconds = item.timeRecordings.reduce((sum, rec) => sum + (rec.duration || 0), 0);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const timeText = totalSeconds > 0 ? `${hours}h ${minutes}m` : 'No time logged';
+
+            card.innerHTML = `
+                <div class="card-content">
+                    <div class="card-title">${item.title}</div>
+                    <div class="card-time">${timeText}</div>
+                </div>
+            `;
+
+            // Click to show details
+            card.addEventListener('click', () => showWorkItemDetail(item.id));
+
+            // Drag events
+            card.addEventListener('dragstart', handleCardDragStart);
+            card.addEventListener('dragend', handleCardDragEnd);
+            card.addEventListener('contextmenu', (e) => showWorkItemContextMenu(e, item.id));
+
+            return card;
+        }
+
+        // Work Item Detail Dialog
+        function showWorkItemDetail(itemId) {
+            const item = workItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            document.getElementById('detailTitleText').textContent = item.title;
+            document.getElementById('detailDescription').textContent = item.description || 'No description';
+
+            // Calculate total time logged
+            const totalSeconds = item.timeRecordings.reduce((sum, rec) => sum + (rec.duration || 0), 0);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            const timeText = `${hours}h ${minutes}m ${seconds}s`;
+
+            document.getElementById('detailTimeLogged').textContent = timeText;
+
+            // Calculate and display last 7 days of time tracking
+            const last7Days = getLast7DaysTimeBreakdown(item.timeRecordings);
+            const dailyBreakdownEl = document.getElementById('detailDailyBreakdown');
+            dailyBreakdownEl.innerHTML = last7Days.map(day => {
+                const dayHours = Math.floor(day.seconds / 3600);
+                const dayMinutes = Math.floor((day.seconds % 3600) / 60);
+                const timeDisplay = day.seconds > 0 ? `${dayHours}h ${dayMinutes}m` : '0h 0m';
+                return `<div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
+                    <span>${day.date}</span>
+                    <span style="font-weight: bold;">${timeDisplay}</span>
+                </div>`;
+            }).join('');
+
+            document.getElementById('workItemDetailOverlay').classList.add('active');
+        }
+
+        // Get time breakdown for last 7 days
+        function getLast7DaysTimeBreakdown(timeRecordings) {
+            const today = new Date();
+            const last7Days = [];
+
+            // Generate array of last 7 days (including today)
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateString = date.toISOString().split('T')[0];
+                last7Days.push({
+                    date: dateString,
+                    seconds: 0
+                });
+            }
+
+            // Aggregate time recordings by date
+            timeRecordings.forEach(rec => {
+                const recDate = rec.date || new Date(rec.startTime).toISOString().split('T')[0];
+                const dayEntry = last7Days.find(d => d.date === recDate);
+                if (dayEntry) {
+                    dayEntry.seconds += rec.duration || 0;
+                }
+            });
+
+            return last7Days;
+        }
+
+        function closeWorkItemDetail() {
+            document.getElementById('workItemDetailOverlay').classList.remove('active');
+        }
+
+        // Kanban Drag and Drop Functions
+        function handleCardDragStart(e) {
+            draggedCardId = parseInt(this.dataset.itemId);
             this.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
+
+            // Find which column this card is in
+            const item = workItems.find(i => i.id === draggedCardId);
+            if (item) {
+                draggedFromColumn = item.priority;
+            }
         }
 
-        function handleDragOver(e) {
-            if (e.preventDefault) {
-                e.preventDefault();
-            }
-            e.dataTransfer.dropEffect = 'move';
-            return false;
-        }
-
-        function handleDrop(e) {
-            if (e.stopPropagation) {
-                e.stopPropagation();
-            }
-
-            if (draggedElement !== this) {
-                const draggedIndex = parseInt(draggedElement.dataset.index);
-                const targetIndex = parseInt(this.dataset.index);
-
-                const draggedItem = workItems[draggedIndex];
-                workItems.splice(draggedIndex, 1);
-                workItems.splice(targetIndex, 0, draggedItem);
-
-                saveToLocalStorage();
-                renderWorkItems();
-            }
-
-            return false;
-        }
-
-        function handleDragEnd(e) {
+        function handleCardDragEnd(e) {
             this.classList.remove('dragging');
+            draggedCardId = null;
+            draggedFromColumn = null;
         }
 
-        // Timer Functions
-        function startTimer(index) {
-            const item = workItems[index];
+        function handleColumnDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
 
-            // Create new timer
+        function handleColumnDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const targetPriority = this.dataset.priority;
+
+            if (draggedCardId !== null) {
+                // Moving card between columns - update priority
+                const item = workItems.find(i => i.id === draggedCardId);
+                if (item && item.priority !== targetPriority) {
+                    item.priority = targetPriority;
+                    saveToLocalStorage();
+                    renderWorkItems();
+                }
+            }
+        }
+
+        // Timer Sidebar - Drag to start timer
+        const timerSidebar = document.getElementById('timerSidebar');
+        timerSidebar.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            timerSidebar.style.background = 'rgb(140, 140, 140)'; // Visual feedback
+        });
+
+        timerSidebar.addEventListener('dragleave', function(e) {
+            timerSidebar.style.background = 'rgb(160, 160, 160)';
+        });
+
+        timerSidebar.addEventListener('drop', function(e) {
+            e.preventDefault();
+            timerSidebar.style.background = 'rgb(160, 160, 160)';
+
+            if (draggedCardId !== null) {
+                const item = workItems.find(i => i.id === draggedCardId);
+                if (item && !activeTimers[item.id]) {
+                    startTimer(item.id);
+                }
+            }
+        });
+
+        // Timer Functions - Count Up
+        function startTimer(itemId) {
+            const item = workItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            // Create new timer (count-up)
             const timer = {
                 itemId: item.id,
-                index: index,
-                remainingSeconds: item.totalMinutes * 60,
-                totalSeconds: item.totalMinutes * 60,
+                startTime: Date.now(),
+                elapsedSeconds: 0,
                 paused: false,
                 interval: null
             };
@@ -1212,27 +1677,57 @@
             // Start the timer interval
             timer.interval = setInterval(() => updateTimer(item.id), 1000);
 
-            renderWorkItems();
             renderActiveTimers();
-            updateSidebarVisibility();
+            saveToLocalStorage();
         }
 
         function updateTimer(itemId) {
             const timer = activeTimers[itemId];
             if (!timer || timer.paused) return;
 
-            if (timer.remainingSeconds > 0) {
-                timer.remainingSeconds--;
-                renderActiveTimers();
-                // Auto-save timer progress every 10 seconds
-                if (timer.remainingSeconds % 10 === 0) {
-                    saveToLocalStorage();
+            timer.elapsedSeconds++;
+            renderActiveTimers();
+
+            // Check for 8-hour warning (28800 seconds)
+            if (timer.elapsedSeconds === 28800) {
+                const item = workItems.find(i => i.id == itemId);
+                playTimerWarning();
+                if (confirm(`Timer Alert!\n\nThe timer for "${item ? item.title : 'Work Item'}" has been running for 8 hours.\n\nHave you forgotten about this timer?\n\nClick OK to stop the timer, or Cancel to continue.`)) {
+                    stopTimer(itemId);
                 }
-            } else {
-                // Timer completed
-                clearInterval(timer.interval);
-                playAlarm();
-                showCompletionDialog(itemId);
+            }
+
+            // Auto-save timer progress every 60 seconds
+            if (timer.elapsedSeconds % 60 === 0) {
+                saveToLocalStorage();
+            }
+        }
+
+        // Play timer warning sound
+        function playTimerWarning() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                // Play 3 beeps
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+
+                        oscillator.frequency.value = 880;
+                        oscillator.type = 'sine';
+
+                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                        oscillator.start(audioContext.currentTime);
+                        oscillator.stop(audioContext.currentTime + 0.5);
+                    }, i * 600);
+                }
+            } catch (error) {
+                console.error('Audio playback failed:', error);
             }
         }
 
@@ -1240,18 +1735,10 @@
             const timer = activeTimers[itemId];
             if (timer) {
                 timer.paused = true;
-                renderWorkItems();
+                clearInterval(timer.interval);
+                timer.interval = null;
                 renderActiveTimers();
-            }
-        }
-
-        function pauseTimerAndClose(itemId) {
-            const timer = activeTimers[itemId];
-            if (timer) {
-                timer.paused = true;
                 saveToLocalStorage();
-                renderWorkItems();
-                renderActiveTimers();
             }
         }
 
@@ -1259,126 +1746,40 @@
             const timer = activeTimers[itemId];
             if (timer) {
                 timer.paused = false;
-                renderWorkItems();
+                timer.startTime = Date.now() - (timer.elapsedSeconds * 1000);
+                timer.interval = setInterval(() => updateTimer(itemId), 1000);
                 renderActiveTimers();
-            }
-        }
-
-        function playTimer(itemId) {
-            resumeTimer(itemId);
-        }
-
-        function cancelTimer(itemId) {
-            cancelingTimerId = itemId;
-            document.getElementById('cancelTimerOverlay').classList.add('active');
-        }
-
-        function closeCancelTimerDialog() {
-            document.getElementById('cancelTimerOverlay').classList.remove('active');
-            cancelingTimerId = null;
-        }
-
-        function closeTimerSaveProgress() {
-            if (cancelingTimerId === null) return;
-
-            const timer = activeTimers[cancelingTimerId];
-            if (timer) {
-                // Calculate time used in this session
-                const timeUsedSeconds = timer.totalSeconds - timer.remainingSeconds;
-                const timeUsedMinutes = Math.ceil(timeUsedSeconds / 60);
-
-                // Update the work item
-                const item = workItems[timer.index];
-                if (item) {
-                    // Add the time used to accumulated time
-                    item.accumulatedMinutes = (item.accumulatedMinutes || 0) + timeUsedMinutes;
-
-                    // Update total time to be remaining time
-                    const remainingMinutes = Math.ceil(timer.remainingSeconds / 60);
-                    item.totalMinutes = remainingMinutes;
-                }
-
-                // Clear the timer
-                clearInterval(timer.interval);
-                delete activeTimers[cancelingTimerId];
                 saveToLocalStorage();
-                renderWorkItems();
-                renderActiveTimers();
-                updateSidebarVisibility();
             }
-
-            closeCancelTimerDialog();
         }
 
-        function resetTimerCompletely() {
-            if (cancelingTimerId === null) return;
+        function stopTimer(itemId) {
+            const timer = activeTimers[itemId];
+            if (!timer) return;
 
-            const timer = activeTimers[cancelingTimerId];
-            if (timer) {
-                // Restore work item to original time and clear accumulated time
-                const item = workItems[timer.index];
-                if (item) {
-                    item.totalMinutes = item.originalMinutes || item.totalMinutes;
-                    item.accumulatedMinutes = 0;
-                }
+            // Save time recording to work item with date
+            const item = workItems.find(i => i.id === itemId);
+            if (item) {
+                const now = new Date();
+                const dateString = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const recording = {
+                    startTime: timer.startTime,
+                    endTime: Date.now(),
+                    duration: timer.elapsedSeconds,
+                    date: dateString
+                };
+                item.timeRecordings.push(recording);
+            }
 
-                // Clear the timer
+            // Clear the timer
+            if (timer.interval) {
                 clearInterval(timer.interval);
-                delete activeTimers[cancelingTimerId];
-                saveToLocalStorage();
-                renderWorkItems();
-                renderActiveTimers();
-                updateSidebarVisibility();
             }
+            delete activeTimers[itemId];
 
-            closeCancelTimerDialog();
-        }
-
-        function playAlarm() {
-            // Always use Web Audio API for better Safari compatibility
-            playBeep();
-        }
-
-        function playBeep() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-
-                // Create a pleasant alarm sound with multiple beeps
-                oscillator.frequency.value = 880; // A5 note
-                oscillator.type = 'sine';
-
-                // First beep
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-
-                // Second beep
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + 0.3);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-
-                // Third beep
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + 0.6);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
-
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.8);
-            } catch (e) {
-                console.error('Could not play beep:', e);
-                // Final fallback - try the audio element
-                try {
-                    const alarm = document.getElementById('alarmSound');
-                    alarm.currentTime = 0;
-                    alarm.play().catch(() => {
-                        alert('Timer Complete!');
-                    });
-                } catch (err) {
-                    alert('Timer Complete!');
-                }
-            }
+            saveToLocalStorage();
+            renderWorkItems();
+            renderActiveTimers();
         }
 
         // Render Active Timers in Sidebar
@@ -1388,19 +1789,17 @@
 
             Object.keys(activeTimers).forEach(itemId => {
                 const timer = activeTimers[itemId];
-                const item = workItems[timer.index];
+                const item = workItems.find(i => i.id == itemId);
 
                 if (!item) {
                     delete activeTimers[itemId];
                     return;
                 }
 
-                const hours = Math.floor(timer.remainingSeconds / 3600);
-                const minutes = Math.floor((timer.remainingSeconds % 3600) / 60);
-                const seconds = timer.remainingSeconds % 60;
+                const hours = Math.floor(timer.elapsedSeconds / 3600);
+                const minutes = Math.floor((timer.elapsedSeconds % 3600) / 60);
+                const seconds = timer.elapsedSeconds % 60;
                 const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-                const progress = (timer.remainingSeconds / timer.totalSeconds) * 100;
 
                 // Add live indicator if timer is running
                 const liveIndicator = !timer.paused ? '<span class="live-indicator"></span>' : '';
@@ -1410,91 +1809,18 @@
                 timerCard.innerHTML = `
                     <h4>${item.title}${liveIndicator}</h4>
                     <div class="timer-clock-small">${timeString}</div>
-                    <div class="progress-bar-small">
-                        <div class="progress-fill-small" style="width: ${progress}%"></div>
-                    </div>
                     <div class="timer-controls">
                         ${timer.paused ?
-                            `<button class="timer-btn play" onclick="playTimer(${itemId})">Play</button>` :
+                            `<button class="timer-btn play" onclick="resumeTimer(${itemId})">Resume</button>` :
                             `<button class="timer-btn pause" onclick="pauseTimer(${itemId})">Pause</button>`
                         }
-                        <button class="timer-btn cancel" onclick="cancelTimer(${itemId})">Cancel</button>
+                        <button class="timer-btn cancel" onclick="stopTimer(${itemId})">Stop</button>
                     </div>
                 `;
                 container.appendChild(timerCard);
             });
         }
 
-        function updateSidebarVisibility() {
-            // Sidebar is now always visible, no need to update
-        }
-
-        // Add Time Functions
-        function showAddTimeDialog(itemId) {
-            currentTimerForAddTime = itemId;
-            document.getElementById('addTimeOverlay').classList.add('active');
-        }
-
-        function closeAddTimeDialog() {
-            document.getElementById('addTimeOverlay').classList.remove('active');
-            document.getElementById('addTimeHours').value = '0';
-            document.getElementById('addTimeMinutes').value = '0';
-            currentTimerForAddTime = null;
-        }
-
-        function addMoreTime() {
-            if (!currentTimerForAddTime) return;
-
-            const hours = parseInt(document.getElementById('addTimeHours').value) || 0;
-            const minutes = parseInt(document.getElementById('addTimeMinutes').value) || 0;
-            const additionalSeconds = (hours * 60 + minutes) * 60;
-
-            if (additionalSeconds === 0) {
-                alert('Please enter a time duration');
-                return;
-            }
-
-            const timer = activeTimers[currentTimerForAddTime];
-            if (timer) {
-                timer.remainingSeconds += additionalSeconds;
-                timer.totalSeconds += additionalSeconds;
-                workItems[timer.index].totalMinutes += (hours * 60 + minutes);
-
-                saveToLocalStorage();
-                renderWorkItems();
-                renderActiveTimers();
-            }
-
-            closeAddTimeDialog();
-        }
-
-        function showAddTimeFromCompletion(itemId) {
-            document.getElementById('completionOverlay').classList.remove('active');
-            showAddTimeDialog(itemId);
-        }
-
-        // Completion Functions
-        function showCompletionDialog(itemId) {
-            currentTimerForAddTime = itemId;
-            document.getElementById('completionOverlay').classList.add('active');
-        }
-
-        function completeWorkItem() {
-            if (!currentTimerForAddTime) return;
-
-            const timer = activeTimers[currentTimerForAddTime];
-            if (timer) {
-                workItems[timer.index].locked = true;
-                delete activeTimers[currentTimerForAddTime];
-                saveToLocalStorage();
-                renderWorkItems();
-                renderActiveTimers();
-                updateSidebarVisibility();
-            }
-
-            document.getElementById('completionOverlay').classList.remove('active');
-            currentTimerForAddTime = null;
-        }
 
         // Notes Functions
         function showAddNoteDialog() {
@@ -1596,6 +1922,7 @@
                 }
 
                 noteEl.addEventListener('mousedown', startNoteDrag);
+                noteEl.addEventListener('dblclick', () => editNote(note.id));
                 noteEl.addEventListener('contextmenu', (e) => showNoteContextMenu(e, note.id));
 
                 // Add resize observer to save dimensions
@@ -1712,6 +2039,7 @@
             const exportData = {
                 workItems: workItems,
                 stickyNotes: stickyNotes,
+                archivedItems: archivedItems,
                 activeTimers: serializeActiveTimers()
             };
             const dataStr = JSON.stringify(exportData, null, 2);
@@ -1735,17 +2063,14 @@
                     const imported = JSON.parse(e.target.result);
                     // Handle old format (just array) or new format (object)
                     if (Array.isArray(imported)) {
-                        workItems = imported;
+                        workItems = migrateOldWorkItems(imported);
                     } else {
                         workItems = imported.workItems || [];
-                        // Ensure all work items have accumulatedMinutes and originalMinutes properties
-                        workItems = workItems.map(item => ({
-                            ...item,
-                            accumulatedMinutes: item.accumulatedMinutes || 0,
-                            originalMinutes: item.originalMinutes || item.totalMinutes
-                        }));
+                        // Migrate old format work items to new format
+                        workItems = workItems.map(item => migrateWorkItem(item));
 
                         stickyNotes = imported.stickyNotes || [];
+                        archivedItems = imported.archivedItems || [];
                         // Restore active timers if present
                         if (imported.activeTimers) {
                             deserializeActiveTimers(imported.activeTimers);
@@ -1762,6 +2087,35 @@
             };
             reader.readAsText(file);
             event.target.value = '';
+        }
+
+        // Migrate old work item format to new format
+        function migrateWorkItem(item) {
+            // If already in new format with timeRecordings
+            if (item.timeRecordings) {
+                // Ensure all recordings have a date field
+                item.timeRecordings = item.timeRecordings.map(rec => {
+                    if (!rec.date && rec.startTime) {
+                        // Add date based on startTime
+                        rec.date = new Date(rec.startTime).toISOString().split('T')[0];
+                    }
+                    return rec;
+                });
+                return item;
+            }
+
+            // Migrate from old format
+            return {
+                id: item.id,
+                title: item.title,
+                description: '', // Old format didn't have description
+                priority: item.priority || 'none',
+                timeRecordings: [] // Old format tracked totalMinutes, not recordings
+            };
+        }
+
+        function migrateOldWorkItems(items) {
+            return items.map(item => migrateWorkItem(item));
         }
 
         function clearWork() {
@@ -1781,6 +2135,7 @@
 
             workItems = [];
             stickyNotes = [];
+            archivedItems = [];
             saveToLocalStorage();
             renderWorkItems();
             renderNotes();
@@ -1797,6 +2152,7 @@
             const data = {
                 workItems: workItems,
                 stickyNotes: stickyNotes,
+                archivedItems: archivedItems,
                 activeTimers: serializeActiveTimers()
             };
             localStorage.setItem('timeManagementData', JSON.stringify(data));
@@ -1808,9 +2164,8 @@
                 const timer = activeTimers[itemId];
                 serializedTimers[itemId] = {
                     itemId: timer.itemId,
-                    index: timer.index,
-                    remainingSeconds: timer.remainingSeconds,
-                    totalSeconds: timer.totalSeconds,
+                    startTime: timer.startTime,
+                    elapsedSeconds: timer.elapsedSeconds,
                     paused: timer.paused,
                     timestamp: Date.now()
                 };
@@ -1828,9 +2183,8 @@
                 if (item) {
                     const timer = {
                         itemId: saved.itemId,
-                        index: workItems.indexOf(item),
-                        remainingSeconds: saved.remainingSeconds,
-                        totalSeconds: saved.totalSeconds,
+                        startTime: saved.startTime,
+                        elapsedSeconds: saved.elapsedSeconds || 0,
                         paused: saved.paused,
                         interval: null
                     };
@@ -1856,16 +2210,13 @@
                     const data = JSON.parse(saved);
                     // Handle old format (just array) or new format (object)
                     if (Array.isArray(data)) {
-                        workItems = data;
+                        workItems = migrateOldWorkItems(data);
                         stickyNotes = [];
+                        archivedItems = [];
                     } else {
                         workItems = data.workItems || [];
-                        // Ensure all work items have accumulatedMinutes and originalMinutes properties
-                        workItems = workItems.map(item => ({
-                            ...item,
-                            accumulatedMinutes: item.accumulatedMinutes || 0,
-                            originalMinutes: item.originalMinutes || item.totalMinutes
-                        }));
+                        // Migrate old format work items to new format
+                        workItems = workItems.map(item => migrateWorkItem(item));
 
                         stickyNotes = data.stickyNotes || [];
                         // Ensure all notes have collapsed and title properties
@@ -1875,6 +2226,8 @@
                             title: note.title || 'Untitled'
                         }));
 
+                        archivedItems = data.archivedItems || [];
+
                         // Restore active timers
                         deserializeActiveTimers(data.activeTimers);
                     }
@@ -1882,6 +2235,7 @@
                     console.error('Error loading data:', error);
                     workItems = [];
                     stickyNotes = [];
+                    archivedItems = [];
                 }
             }
         }
@@ -1912,16 +2266,149 @@
 
         function deleteWorkItemFromContext() {
             if (contextMenuWorkItemId !== null) {
-                // Cancel any active timer for this item
+                // Stop any active timer for this item
                 if (activeTimers[contextMenuWorkItemId]) {
-                    cancelTimer(contextMenuWorkItemId);
+                    const timer = activeTimers[contextMenuWorkItemId];
+                    if (timer.interval) {
+                        clearInterval(timer.interval);
+                    }
+                    delete activeTimers[contextMenuWorkItemId];
                 }
 
                 // Remove the work item
                 workItems = workItems.filter(item => item.id !== contextMenuWorkItemId);
                 saveToLocalStorage();
                 renderWorkItems();
+                renderActiveTimers();
                 closeWorkItemContextMenu();
+            }
+        }
+
+        function archiveWorkItemFromContext() {
+            if (contextMenuWorkItemId !== null) {
+                const item = workItems.find(i => i.id === contextMenuWorkItemId);
+                if (item) {
+                    // Show confirmation dialog with item title
+                    document.getElementById('archiveConfirmItemTitle').textContent = item.title;
+                    document.getElementById('archiveConfirmationOverlay').classList.add('active');
+                    closeWorkItemContextMenu();
+                }
+            }
+        }
+
+        function closeArchiveConfirmation() {
+            document.getElementById('archiveConfirmationOverlay').classList.remove('active');
+            contextMenuWorkItemId = null;
+        }
+
+        function confirmArchiveWorkItem() {
+            if (contextMenuWorkItemId !== null) {
+                const item = workItems.find(i => i.id === contextMenuWorkItemId);
+                if (item) {
+                    // Stop any active timer for this item
+                    if (activeTimers[contextMenuWorkItemId]) {
+                        const timer = activeTimers[contextMenuWorkItemId];
+                        if (timer.interval) {
+                            clearInterval(timer.interval);
+                        }
+                        delete activeTimers[contextMenuWorkItemId];
+                    }
+
+                    // Create archived item with only title, description, and priority
+                    const archivedItem = {
+                        id: Date.now(), // New ID for archived item
+                        title: item.title,
+                        description: item.description || '',
+                        priority: item.priority,
+                        archivedDate: new Date().toISOString()
+                    };
+
+                    archivedItems.push(archivedItem);
+
+                    // Remove from active work items
+                    workItems = workItems.filter(i => i.id !== contextMenuWorkItemId);
+
+                    saveToLocalStorage();
+                    renderWorkItems();
+                    renderActiveTimers();
+                    closeArchiveConfirmation();
+                }
+            }
+        }
+
+        // Archive View Functions
+        function showArchiveView() {
+            renderArchiveList();
+            closeSaveLoadDialog();
+            document.getElementById('archiveViewOverlay').classList.add('active');
+        }
+
+        function closeArchiveView() {
+            document.getElementById('archiveViewOverlay').classList.remove('active');
+        }
+
+        function renderArchiveList() {
+            const container = document.getElementById('archiveList');
+
+            if (archivedItems.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #888; padding: 40px 20px;">No archived items</p>';
+                return;
+            }
+
+            container.innerHTML = archivedItems.map(item => {
+                const archivedDate = new Date(item.archivedDate).toLocaleDateString();
+                const priorityColors = {
+                    high: '#FFB3BA',
+                    medium: '#FFE4A3',
+                    low: '#B4E7B4',
+                    none: '#AED6F1'
+                };
+                const bgColor = priorityColors[item.priority] || priorityColors.none;
+
+                return `
+                    <div style="background: ${bgColor}; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px;">${item.title}</div>
+                            <div style="font-size: 14px; color: #555; margin-bottom: 5px;">${item.description || 'No description'}</div>
+                            <div style="font-size: 12px; color: #666;">Priority: ${item.priority.charAt(0).toUpperCase() + item.priority.slice(1)} • Archived: ${archivedDate}</div>
+                        </div>
+                        <div style="display: flex; gap: 5px; margin-left: 10px;">
+                            <button class="btn btn-info" style="padding: 8px 12px; font-size: 12px;" onclick="restoreArchivedItem(${item.id})">Restore</button>
+                            <button class="btn btn-danger" style="padding: 8px 12px; font-size: 12px;" onclick="deleteArchivedItem(${item.id})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function restoreArchivedItem(archivedItemId) {
+            const archivedItem = archivedItems.find(i => i.id === archivedItemId);
+            if (archivedItem) {
+                // Create new work item from archived item
+                const restoredItem = {
+                    id: Date.now(), // New ID for restored item
+                    title: archivedItem.title,
+                    description: archivedItem.description,
+                    priority: archivedItem.priority,
+                    timeRecordings: [] // Start fresh with no time recordings
+                };
+
+                workItems.push(restoredItem);
+
+                // Remove from archive
+                archivedItems = archivedItems.filter(i => i.id !== archivedItemId);
+
+                saveToLocalStorage();
+                renderWorkItems();
+                renderArchiveList();
+            }
+        }
+
+        function deleteArchivedItem(archivedItemId) {
+            if (confirm('Are you sure you want to permanently delete this archived item?')) {
+                archivedItems = archivedItems.filter(i => i.id !== archivedItemId);
+                saveToLocalStorage();
+                renderArchiveList();
             }
         }
 

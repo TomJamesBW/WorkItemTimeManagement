@@ -27,30 +27,40 @@ A single-page time management application for tracking work items with a kanban 
 - **Time Recording**: Stopping a timer saves the recording with date stamp to the work item
 - **Auto-save**: Timer progress saved every 60 seconds and persists across page refreshes
 - **Restore on Refresh**: Active timers automatically resume after page reload
+- **2-Hour Alert**: Audible 3-beep warning with confirmation dialog when timer reaches 8 hours
 
 ### Sticky Notes
 - **Draggable Notes**: Position notes anywhere in the notes section
 - **Resizable**: Drag bottom-right corner to resize notes (150px-400px width, adjustable height)
 - **Color Selection**: 8 color options for note backgrounds
-- **Title & Content**: Notes include both title and text content
+- **Title & Content**: Notes include both title and text content with preserved line breaks
 - **Collapse/Expand**: Minimize notes to show just the title
+- **Edit Notes**: Double-click any note to edit its content, title, or color
 - **Context Menu**: Right-click to delete notes
 - **Auto-save**: All notes persist to localStorage including custom dimensions
 
 ### Data Management
-- **LocalStorage**: Automatic saving of all data including active timer states
-- **JSON Export**: Save work items, notes, archived items, and active timers to JSON file
-- **JSON Import**: Load work items, notes, archived items, and active timers from JSON file
-- **Archive System**: Archive completed work items to preserve title, description, and priority (time data removed)
-- **Archive View**: Browse archived items with restore or permanent delete options
+- **LocalStorage**: Automatic saving of work items, notes, and active timer states
+- **JSON Export**: Save work items, notes, and active timers to JSON file
+- **JSON Import**: Load work items, notes, and active timers from JSON file
+- **OneDrive Integration**: Sign in with Microsoft account for cloud backup and archive storage
+- **OneDrive Auto-Backup**: Optional hourly automatic backup to OneDrive (remote-backup.json)
+- **OneDrive Manual Sync**: Export to and import from OneDrive on demand
+- **Archive System**: Archive completed work items to OneDrive (requires OneDrive sign-in)
+  - Archives stored in archive.json in WorkItemTimeManagement folder on OneDrive
+  - Archived items preserve title, description, and priority (time data removed)
+  - Archive option disabled when not signed in to OneDrive
+- **Archive View**: Browse archived items with restore or permanent delete options (requires OneDrive)
 - **Clear Work**: Option to clear all work items, notes, and timers with confirmation dialog
 
 ## Technical Specifications
 
 ### Technology Stack
 - **Pure HTML5**: Single-file application
-- **CSS3**: Grid layout (kanban board), flexbox, transitions
+- **CSS3**: Grid layout with horizontal scroll (300px fixed-width columns), flexbox, transitions
 - **Vanilla JavaScript**: No framework dependencies
+- **MSAL.js**: Microsoft Authentication Library for OneDrive integration
+- **Microsoft Graph API**: OneDrive file storage and retrieval
 - **Drag and Drop API**: Native HTML5 drag and drop
 - **LocalStorage API**: Client-side data persistence
 
@@ -582,25 +592,33 @@ A single-page time management application for tracking work items with a kanban 
 7. Right-click to delete
 
 ### Archiving Work Items
-1. **Archive an item**: Right-click work item and select "Archive"
-2. Confirmation dialog warns that time tracking data will be permanently removed
-3. Archived items retain only title, description, and priority
-4. **View archive**: Click Save/Load button → View Archive
-5. **Restore from archive**: Click "Restore" button on archived item (creates new work item with no time data)
-6. **Delete archived item**: Click "Delete" button for permanent removal
+**Note**: Archive functionality requires OneDrive sign-in. Archive option is disabled when not connected to OneDrive.
+
+1. **Sign in to OneDrive**: Click Settings button and sign in with Microsoft account
+2. **Archive an item**: Right-click work item and select "Archive" (only available when signed in)
+3. Confirmation dialog warns that time tracking data will be permanently removed
+4. Archived items are saved to archive.json in your OneDrive (WorkItemTimeManagement folder)
+5. Archived items retain only title, description, and priority
+6. **View archive**: Click Save/Load button → View Archive (loads from OneDrive)
+7. **Restore from archive**: Click "Restore" button on archived item (creates new work item with no time data)
+8. **Delete archived item**: Click "Delete" button for permanent removal from OneDrive
 
 ### Saving/Loading
-- **Save to JSON**: Export work items, notes, archived items, and active timers to file
-- **Import JSON**: Load work items, notes, archived items, and active timers from file
-- **View Archive**: Browse all archived work items with options to restore or permanently delete
+- **Save to JSON**: Export work items, notes, and active timers to local file
+- **Import JSON**: Load work items, notes, and active timers from local file
+- **Export to OneDrive**: Save work items, notes, and active timers to OneDrive (remote-backup.json)
+- **Import from OneDrive**: Load work items, notes, and active timers from OneDrive backup
+- **View Archive**: Browse all archived work items stored in OneDrive (requires OneDrive sign-in)
 - **Clear Work**: Remove all work items, notes, and timers (with confirmation dialog)
 - Auto-save to localStorage every 60 seconds for active timers
 - Timers automatically restore on page refresh
 - Full backward compatibility with v1.x JSON exports (automatic migration)
+- **Note**: Archive data is stored separately in OneDrive and not included in JSON or OneDrive backup files
 
 ## Keyboard Shortcuts
 - **Right-click** on work item: Archive or delete menu
 - **Right-click** on note: Delete menu
+- **Double-click** on note: Edit note content
 - **Drag** work item card: Move between priority columns
 - **Drag** work item to sidebar: Start timer
 - **Drag** note: Reposition in notes area
@@ -630,7 +648,7 @@ A single-page time management application for tracking work items with a kanban 
 This is a single-page application created for personal time management. Feel free to use and modify as needed.
 
 ## Support
-For issues or feature requests, please refer to the version history and ensure you're using the latest version (v2.0).
+For issues or feature requests, please refer to the version history and ensure you're using the latest version (v2.11).
 
 ## Migration from v1.x to v2.0
 If you have existing v1.x data:
