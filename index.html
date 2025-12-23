@@ -869,7 +869,7 @@
         <button class="floating-btn settings-btn" onclick="showSettingsDialog()">Settings</button>
 
         <!-- Version Display -->
-        <div class="version">v2.13</div>
+        <div class="version">v2.14</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -2584,60 +2584,75 @@
 
         function closeArchiveConfirmation() {
             document.getElementById('archiveConfirmationOverlay').classList.remove('active');
-            contextMenuWorkItemId = null;
         }
 
         async function confirmArchiveWorkItem() {
-            if (contextMenuWorkItemId !== null) {
-                const item = workItems.find(i => i.id === contextMenuWorkItemId);
-                if (item) {
-                    try {
-                        showProgress('Archiving Work Item', 'Preparing archive...', 20);
+            console.log('confirmArchiveWorkItem called, contextMenuWorkItemId:', contextMenuWorkItemId);
 
-                        // Stop any active timer for this item
-                        if (activeTimers[contextMenuWorkItemId]) {
-                            const timer = activeTimers[contextMenuWorkItemId];
-                            if (timer.interval) {
-                                clearInterval(timer.interval);
-                            }
-                            delete activeTimers[contextMenuWorkItemId];
-                        }
+            if (contextMenuWorkItemId === null) {
+                console.error('No work item selected for archiving');
+                alert('Error: No work item selected. Please try again.');
+                closeArchiveConfirmation();
+                return;
+            }
 
-                        updateProgress(40, 'Loading existing archive...');
-                        // Load current archive from OneDrive
-                        const currentArchive = await loadArchiveFromOneDrive();
+            const item = workItems.find(i => i.id === contextMenuWorkItemId);
+            if (!item) {
+                console.error('Work item not found:', contextMenuWorkItemId);
+                alert('Error: Work item not found. Please try again.');
+                closeArchiveConfirmation();
+                contextMenuWorkItemId = null;
+                return;
+            }
 
-                        // Create archived item with only title, description, and priority
-                        const archivedItem = {
-                            id: Date.now(), // New ID for archived item
-                            title: item.title,
-                            description: item.description || '',
-                            priority: item.priority,
-                            archivedDate: new Date().toISOString()
-                        };
+            try {
+                closeArchiveConfirmation();
+                showProgress('Archiving Work Item', 'Preparing archive...', 20);
 
-                        currentArchive.push(archivedItem);
-
-                        updateProgress(70, 'Saving to OneDrive...');
-                        // Save updated archive to OneDrive
-                        await saveArchiveToOneDrive(currentArchive);
-
-                        updateProgress(90, 'Updating work items...');
-                        // Remove from active work items
-                        workItems = workItems.filter(i => i.id !== contextMenuWorkItemId);
-
-                        saveToLocalStorage();
-                        renderWorkItems();
-                        renderActiveTimers();
-                        closeArchiveConfirmation();
-
-                        showProgressSuccess('Work item archived successfully!');
-                        setTimeout(hideProgress, 2000);
-                    } catch (error) {
-                        console.error('Archive error:', error);
-                        showProgressError('Failed to archive: ' + error.message);
+                // Stop any active timer for this item
+                if (activeTimers[contextMenuWorkItemId]) {
+                    const timer = activeTimers[contextMenuWorkItemId];
+                    if (timer.interval) {
+                        clearInterval(timer.interval);
                     }
+                    delete activeTimers[contextMenuWorkItemId];
                 }
+
+                updateProgress(40, 'Loading existing archive...');
+                // Load current archive from OneDrive
+                const currentArchive = await loadArchiveFromOneDrive();
+
+                // Create archived item with only title, description, and priority
+                const archivedItem = {
+                    id: Date.now(), // New ID for archived item
+                    title: item.title,
+                    description: item.description || '',
+                    priority: item.priority,
+                    archivedDate: new Date().toISOString()
+                };
+
+                currentArchive.push(archivedItem);
+
+                updateProgress(70, 'Saving to OneDrive...');
+                // Save updated archive to OneDrive
+                await saveArchiveToOneDrive(currentArchive);
+
+                updateProgress(90, 'Updating work items...');
+                // Remove from active work items
+                workItems = workItems.filter(i => i.id !== contextMenuWorkItemId);
+
+                saveToLocalStorage();
+                renderWorkItems();
+                renderActiveTimers();
+
+                showProgressSuccess('Work item archived successfully!');
+                setTimeout(hideProgress, 2000);
+
+                contextMenuWorkItemId = null;
+            } catch (error) {
+                console.error('Archive error:', error);
+                showProgressError('Failed to archive: ' + error.message);
+                contextMenuWorkItemId = null;
             }
         }
 
