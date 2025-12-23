@@ -798,32 +798,32 @@
             height: 30px;
             background: #e0e0e0;
             border-radius: 15px;
-            overflow: hidden;
             margin-bottom: 15px;
             position: relative;
+            display: flex;
+            align-items: center;
         }
 
         .progress-bar {
-            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
             background: linear-gradient(90deg, #4CAF50, #45a049);
             width: 0%;
             transition: width 0.3s ease;
-            position: relative;
+            border-radius: 15px;
         }
 
-        .progress-bar span {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .progress-bar-container span {
+            position: relative;
+            width: 100%;
+            text-align: center;
             color: #333;
             font-weight: bold;
             font-size: 14px;
             text-shadow: 0 0 3px rgba(255,255,255,0.8);
+            z-index: 1;
         }
 
         .progress-message {
@@ -2807,9 +2807,8 @@
         <div class="progress-box">
             <div class="progress-title" id="progressTitle">Processing...</div>
             <div class="progress-bar-container">
-                <div class="progress-bar" id="progressBar">
-                    <span id="progressPercent">0%</span>
-                </div>
+                <div class="progress-bar" id="progressBar"></div>
+                <span id="progressPercent">0%</span>
             </div>
             <div class="progress-message" id="progressMessage"></div>
             <button class="progress-close-btn" id="progressCloseBtn" onclick="hideProgress()">Close</button>
