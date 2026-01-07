@@ -1628,6 +1628,9 @@
             renderNotes();
             // Start auto-save interval (every 60 seconds)
             startAutoSave();
+            
+            // Setup timer sidebar drag-to-start functionality
+            setupTimerSidebarDragDrop();
         });
 
         // Auto-save timer state every 60 seconds
@@ -1881,29 +1884,32 @@
             }
         }
 
-        // Timer Sidebar - Drag to start timer
-        const timerSidebar = document.getElementById('timerSidebar');
-        timerSidebar.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'copy';
-            timerSidebar.style.background = 'rgb(140, 140, 140)'; // Visual feedback
-        });
+        // Setup Timer Sidebar - Drag to start timer
+        function setupTimerSidebarDragDrop() {
+            const timerSidebar = document.getElementById('timerSidebar');
+            
+            timerSidebar.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+                timerSidebar.style.background = 'rgb(140, 140, 140)'; // Visual feedback
+            });
 
-        timerSidebar.addEventListener('dragleave', function(e) {
-            timerSidebar.style.background = 'rgb(160, 160, 160)';
-        });
+            timerSidebar.addEventListener('dragleave', function(e) {
+                timerSidebar.style.background = 'rgb(160, 160, 160)';
+            });
 
-        timerSidebar.addEventListener('drop', function(e) {
-            e.preventDefault();
-            timerSidebar.style.background = 'rgb(160, 160, 160)';
+            timerSidebar.addEventListener('drop', function(e) {
+                e.preventDefault();
+                timerSidebar.style.background = 'rgb(160, 160, 160)';
 
-            if (draggedCardId !== null) {
-                const item = workItems.find(i => i.id === draggedCardId);
-                if (item && !activeTimers[item.id]) {
-                    startTimer(item.id);
+                if (draggedCardId !== null) {
+                    const item = workItems.find(i => i.id === draggedCardId);
+                    if (item && !activeTimers[item.id]) {
+                        startTimer(item.id);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         // Timer Functions - Count Up
         function startTimer(itemId) {
