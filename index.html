@@ -870,7 +870,7 @@
         <button class="floating-btn settings-btn" onclick="showSettingsDialog()">Settings</button>
 
         <!-- Version Display -->
-        <div class="version">v2.20</div>
+        <div class="version">v2.21</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -1873,27 +1873,21 @@
         }
 
         function handleColumnDrop(e) {
-            e.preventDefault();
-            
             console.log('Drop on column, checking if over timer sidebar...');
             
-            // Check if the drop position is actually over the timer sidebar
+            // Check if the drop position is actually over the timer sidebar FIRST
             const timerSidebar = document.getElementById('timerSidebar');
             const sidebarRect = timerSidebar.getBoundingClientRect();
             
             if (e.clientX >= sidebarRect.left && e.clientX <= sidebarRect.right &&
                 e.clientY >= sidebarRect.top && e.clientY <= sidebarRect.bottom) {
-                console.log('Drop is over timer sidebar, letting sidebar handle it');
-                // Drop is over timer sidebar, let it handle the event
-                if (draggedCardId !== null) {
-                    const item = workItems.find(i => i.id === draggedCardId);
-                    if (item && !activeTimers[item.id]) {
-                        startTimer(item.id);
-                    }
-                }
+                console.log('Drop is over timer sidebar, NOT preventing default - letting sidebar handle it');
+                // Drop is over timer sidebar - DON'T prevent default, let the timer sidebar's drop handler fire
                 return;
             }
 
+            // Only prevent default if we're NOT over the timer sidebar
+            e.preventDefault();
             e.stopPropagation();
             const targetPriority = this.dataset.priority;
 
@@ -1920,16 +1914,22 @@
             
             timerSidebar.addEventListener('dragover', function(e) {
                 e.preventDefault();
+                e.stopPropagation(); // Add this to prevent bubbling
                 e.dataTransfer.dropEffect = 'copy';
                 timerSidebar.style.background = 'rgb(140, 140, 140)'; // Visual feedback
                 console.log('Dragover on timer sidebar, draggedCardId:', draggedCardId);
             });
 
             timerSidebar.addEventListener('dragleave', function(e) {
-                timerSidebar.style.background = 'rgb(160, 160, 160)';
+                // Only change background if we're actually leaving the timer sidebar
+                // (not just entering a child element)
+                if (e.target === timerSidebar) {
+                    timerSidebar.style.background = 'rgb(160, 160, 160)';
+                }
             });
 
             timerSidebar.addEventListener('drop', function(e) {
+                console.log('DROP EVENT FIRED on timer sidebar!');
                 e.preventDefault();
                 e.stopPropagation();
                 timerSidebar.style.background = 'rgb(160, 160, 160)';
