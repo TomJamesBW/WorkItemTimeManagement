@@ -89,6 +89,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            pointer-events: none; /* Let drag events pass through to parent */
         }
 
         .timer-sidebar::-webkit-scrollbar {
@@ -870,7 +871,7 @@
         <button class="floating-btn settings-btn" onclick="showSettingsDialog()">Settings</button>
 
         <!-- Version Display -->
-        <div class="version">v2.21</div>
+        <div class="version">v2.22</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -1914,24 +1915,23 @@
             
             timerSidebar.addEventListener('dragover', function(e) {
                 e.preventDefault();
-                e.stopPropagation(); // Add this to prevent bubbling
-                e.dataTransfer.dropEffect = 'copy';
-                timerSidebar.style.background = 'rgb(140, 140, 140)'; // Visual feedback
+                e.stopPropagation();
+                e.dataTransfer.dropEffect = 'move'; // Must match effectAllowed = 'move'
+                timerSidebar.style.background = 'rgb(140, 140, 140)';
                 console.log('Dragover on timer sidebar, draggedCardId:', draggedCardId);
-            });
+            }, true); // Use capture phase
 
             timerSidebar.addEventListener('dragleave', function(e) {
-                // Only change background if we're actually leaving the timer sidebar
-                // (not just entering a child element)
                 if (e.target === timerSidebar) {
                     timerSidebar.style.background = 'rgb(160, 160, 160)';
                 }
-            });
+            }, true); // Use capture phase
 
             timerSidebar.addEventListener('drop', function(e) {
                 console.log('DROP EVENT FIRED on timer sidebar!');
                 e.preventDefault();
                 e.stopPropagation();
+                e.stopImmediatePropagation(); // Stop all other listeners
                 timerSidebar.style.background = 'rgb(160, 160, 160)';
 
                 console.log('Drop on timer sidebar! draggedCardId:', draggedCardId);
@@ -1948,9 +1948,14 @@
                 } else {
                     console.log('draggedCardId is null!');
                 }
-            });
+            }, true); // Use capture phase - this fires BEFORE bubble phase!
             
             console.log('Timer sidebar drag-drop handlers attached successfully');
+            
+            // Global drop listener to debug where drops are going
+            document.addEventListener('drop', function(e) {
+                console.log('GLOBAL DROP EVENT on:', e.target, 'at position:', e.clientX, e.clientY);
+            }, true); // Capture phase
         }
 
         // Timer Functions - Count Up
