@@ -870,7 +870,7 @@
         <button class="floating-btn settings-btn" onclick="showSettingsDialog()">Settings</button>
 
         <!-- Version Display -->
-        <div class="version">v2.18</div>
+        <div class="version">v2.19</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -1891,10 +1891,16 @@
         function setupTimerSidebarDragDrop() {
             const timerSidebar = document.getElementById('timerSidebar');
             
+            if (!timerSidebar) {
+                console.error('Timer sidebar element not found!');
+                return;
+            }
+            
             timerSidebar.addEventListener('dragover', function(e) {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'copy';
                 timerSidebar.style.background = 'rgb(140, 140, 140)'; // Visual feedback
+                console.log('Dragover on timer sidebar, draggedCardId:', draggedCardId);
             });
 
             timerSidebar.addEventListener('dragleave', function(e) {
@@ -1903,15 +1909,26 @@
 
             timerSidebar.addEventListener('drop', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 timerSidebar.style.background = 'rgb(160, 160, 160)';
+
+                console.log('Drop on timer sidebar! draggedCardId:', draggedCardId);
 
                 if (draggedCardId !== null) {
                     const item = workItems.find(i => i.id === draggedCardId);
+                    console.log('Found item:', item, 'activeTimers:', activeTimers);
                     if (item && !activeTimers[item.id]) {
+                        console.log('Starting timer for item:', item.id);
                         startTimer(item.id);
+                    } else {
+                        console.log('Timer already exists or item not found');
                     }
+                } else {
+                    console.log('draggedCardId is null!');
                 }
             });
+            
+            console.log('Timer sidebar drag-drop handlers attached successfully');
         }
 
         // Timer Functions - Count Up
