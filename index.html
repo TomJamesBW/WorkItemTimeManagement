@@ -870,7 +870,7 @@
         <button class="floating-btn settings-btn" onclick="showSettingsDialog()">Settings</button>
 
         <!-- Version Display -->
-        <div class="version">v2.19</div>
+        <div class="version">v2.20</div>
 
         <!-- Work Items Section -->
         <div class="work-items-section">
@@ -1848,12 +1848,14 @@
             draggedCardId = parseInt(this.dataset.itemId);
             this.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedCardId); // Set data for drag
 
             // Find which column this card is in
             const item = workItems.find(i => i.id === draggedCardId);
             if (item) {
                 draggedFromColumn = item.priority;
             }
+            console.log('Drag start, cardId:', draggedCardId);
         }
 
         function handleCardDragEnd(e) {
@@ -1872,8 +1874,27 @@
 
         function handleColumnDrop(e) {
             e.preventDefault();
-            e.stopPropagation();
+            
+            console.log('Drop on column, checking if over timer sidebar...');
+            
+            // Check if the drop position is actually over the timer sidebar
+            const timerSidebar = document.getElementById('timerSidebar');
+            const sidebarRect = timerSidebar.getBoundingClientRect();
+            
+            if (e.clientX >= sidebarRect.left && e.clientX <= sidebarRect.right &&
+                e.clientY >= sidebarRect.top && e.clientY <= sidebarRect.bottom) {
+                console.log('Drop is over timer sidebar, letting sidebar handle it');
+                // Drop is over timer sidebar, let it handle the event
+                if (draggedCardId !== null) {
+                    const item = workItems.find(i => i.id === draggedCardId);
+                    if (item && !activeTimers[item.id]) {
+                        startTimer(item.id);
+                    }
+                }
+                return;
+            }
 
+            e.stopPropagation();
             const targetPriority = this.dataset.priority;
 
             if (draggedCardId !== null) {
@@ -1885,6 +1906,7 @@
                     renderWorkItems();
                 }
             }
+            console.log('Drop on column:', targetPriority, 'draggedCardId:', draggedCardId);
         }
 
         // Setup Timer Sidebar - Drag to start timer
