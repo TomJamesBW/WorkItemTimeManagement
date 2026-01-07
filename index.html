@@ -1858,8 +1858,11 @@
 
         function handleCardDragEnd(e) {
             this.classList.remove('dragging');
-            draggedCardId = null;
-            draggedFromColumn = null;
+            // Delay resetting draggedCardId to allow drop event to fire first
+            setTimeout(() => {
+                draggedCardId = null;
+                draggedFromColumn = null;
+            }, 50);
         }
 
         function handleColumnDragOver(e) {
